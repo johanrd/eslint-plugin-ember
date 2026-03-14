@@ -54,6 +54,9 @@ eslintTester.run('jquery-ember-run', rule, {
 
     // Not `on`
     'import $ from "jquery"; $("#item").notOn("click", () => {this.handle();});',
+
+    // Event name with colon should not crash (#1359)
+    'import $ from "jquery"; $("#item").on("select2:open", () => {});',
   ],
   invalid: [
     {
@@ -116,6 +119,13 @@ eslintTester.run('jquery-ember-run', rule, {
       code: 'import Ember from "ember"; import $ from "jquery"; $("#item").on("click", () => { Ember.run.unknownFunction(); });',
       output: null,
       errors: [{ message: ERROR_MESSAGE, type: 'MemberExpression' }],
+    },
+    {
+      // Event name with colon should not crash (#1359 — original issue used an
+      // AssignmentExpression with a colon-containing event name)
+      code: 'import $ from "jquery"; $("#item").on("select2:open", () => { this.value = 1; });',
+      output: null,
+      errors: [{ message: ERROR_MESSAGE, type: 'AssignmentExpression' }],
     },
   ],
 });
