@@ -24,6 +24,8 @@ ruleTester.run('template-no-link-to-tagname', rule, {
       output: null,
     },
 
+    // Bare tagName (without @) is just an HTML attribute, not flagged
+    '<template><LinkTo @route="index" tagName="button">Home</LinkTo></template>',
     '<template><Foo @route="routeName" @tagName="button">Link text</Foo></template>',
     '<template><LinkTo @route="routeName">Link text</LinkTo></template>',
     '<template>{{#link-to "routeName"}}Link text{{/link-to}}</template>',
@@ -35,19 +37,13 @@ ruleTester.run('template-no-link-to-tagname', rule, {
   invalid: [
     {
       filename: 'test.gjs',
-      code: '<template><LinkTo @route="index" tagName="button">Home</LinkTo></template>',
-      output: null,
-      errors: [{ messageId: 'noLinkToTagname' }],
-    },
-    {
-      filename: 'test.gjs',
       code: '<template><LinkTo @route="about" @tagName="span">About</LinkTo></template>',
       output: null,
       errors: [{ messageId: 'noLinkToTagname' }],
     },
     {
       filename: 'test.gjs',
-      code: '<template><link-to @route="contact" tagName="div">Contact</link-to></template>',
+      code: '<template><link-to @route="contact" @tagName="div">Contact</link-to></template>',
       output: null,
       errors: [{ messageId: 'noLinkToTagname' }],
     },
@@ -80,6 +76,8 @@ const hbsRuleTester = new RuleTester({
 
 hbsRuleTester.run('template-no-link-to-tagname', rule, {
   valid: [
+    // Bare tagName (without @) is just an HTML attribute, not flagged
+    '<LinkTo @route="index" tagName="button">Home</LinkTo>',
     '<Foo @route="routeName" @tagName="button">Link text</Foo>',
     '<LinkTo @route="routeName">Link text</LinkTo>',
     '{{#link-to "routeName"}}Link text{{/link-to}}',
