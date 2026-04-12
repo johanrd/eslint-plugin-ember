@@ -23,9 +23,20 @@ ruleTester.run('template-no-implicit-this', rule, {
     '<template>{{outlet}}</template>',
     '<template>{{has-block}}</template>',
 
-    // Helpers with params
-    '<template>{{if condition "yes" "no"}}</template>',
-    '<template>{{each items}}</template>',
+    // Helpers with params (callee is not flagged, but args may be)
+    '<template>{{if @condition "yes" "no"}}</template>',
+    '<template>{{each @items}}</template>',
+
+    // SubExpression, modifier, block callees not flagged
+    '<template>{{echo (my-helper @arg)}}</template>',
+    '<template><div {{my-modifier @arg}}></div></template>',
+    '<template>{{#my-component}}{{/my-component}}</template>',
+
+    // Bare {{this}} is not ambiguous
+    '<template>{{this}}</template>',
+
+    // Block params in nested scopes
+    '<template>{{#each @items as |item|}}{{item.name}}{{/each}}</template>',
 
     // Components (PascalCase)
     '<template>{{MyComponent}}</template>',
@@ -130,6 +141,7 @@ hbsRuleTester.run('template-no-implicit-this', rule, {
     '{{@book.author}}',
 
     // Explicit this
+    '{{this}}',
     '{{this.book}}',
     '{{this.book.author}}',
 
@@ -139,6 +151,24 @@ hbsRuleTester.run('template-no-implicit-this', rule, {
 
     // Helpers invoked with positional arguments (callee is not flagged)
     '<MyComponent @prop={{can "edit" @model}} />',
+
+    // SubExpression callees should not be flagged
+    '{{echo (my-helper @arg)}}',
+    '{{echo (some-util "value")}}',
+
+    // ElementModifierStatement callees should not be flagged
+    '<div {{my-modifier @arg}}></div>',
+    '<div {{some-modifier "value"}}></div>',
+
+    // BlockStatement callees should not be flagged
+    '{{#my-component}}{{/my-component}}',
+    '{{#some-layout title="Hi"}}content{{/some-layout}}',
+
+    // Block params should be recognized in nested scopes
+    '{{#each @items as |item|}}{{item.name}}{{/each}}',
+    '{{#each @items as |item|}}{{item}}{{/each}}',
+    '{{#let @foo as |bar|}}{{bar.baz}}{{/let}}',
+    '{{#each @items as |item|}}{{#each item.children as |child|}}{{child.name}}{{/each}}{{/each}}',
 
     // PascalCase components
     '<WelcomePage />',
@@ -231,6 +261,17 @@ hbsRuleTester.run('template-no-implicit-this', rule, {
         {
           message:
             'Ambiguous path "can.do" is not allowed. Use "@can.do" if it is a named argument or "this.can.do" if it is a property on the component.',
+        },
+      ],
+    },
+    // Arguments to control-flow helpers are now flagged (ambiguous paths)
+    {
+      code: '{{if condition "yes" "no"}}',
+      output: null,
+      errors: [
+        {
+          message:
+            'Ambiguous path "condition" is not allowed. Use "@condition" if it is a named argument or "this.condition" if it is a property on the component.',
         },
       ],
     },
