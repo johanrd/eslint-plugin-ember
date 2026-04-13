@@ -150,6 +150,30 @@ rules in templates can be disabled with eslint directives with mustache or html 
 </template>
 ```
 
+## Migrating from ember-template-lint
+
+If you are replacing `ember-template-lint` with this plugin, use the `recommended-template` config to get the equivalent set of rules:
+
+```js
+// eslint.config.js (flat config)
+import eslintPluginEmberRecommended from 'eslint-plugin-ember/configs/recommended';
+import eslintPluginEmberRecommendedTemplate from 'eslint-plugin-ember/configs/recommended-template';
+
+export default [
+  ...eslintPluginEmberRecommended,
+  ...eslintPluginEmberRecommendedTemplate,
+  {
+    rules: {
+      // Migrate custom overrides from your .template-lintrc.*:
+      'ember/template-no-bare-strings': ['error', { allowlist: ['×'] }],
+      'ember/template-no-inline-styles': 'off',
+    },
+  },
+];
+```
+
+`recommended-template` mirrors the ember-template-lint `recommended` preset.
+
 ## 🧰 Configurations
 
 <!-- begin auto-generated configs list -->
