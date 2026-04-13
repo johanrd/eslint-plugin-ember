@@ -913,6 +913,48 @@ function initESLintWithTemplateLintDisable() {
   });
 }
 
+function initESLintWithTemplateLintDisableAndTemplateRules() {
+  return new ESLint({
+    ignore: false,
+    useEslintrc: false,
+    plugins: { ember: plugin },
+    overrideConfig: {
+      root: true,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+      },
+      parser: gjsGtsParser,
+      plugins: ['ember'],
+      processor: 'ember/template-lint-disable',
+      rules: {
+        'ember/template-no-bare-strings': 'error',
+      },
+    },
+  });
+}
+
+function initESLintWithoutProcessor() {
+  return new ESLint({
+    ignore: false,
+    useEslintrc: false,
+    plugins: { ember: plugin },
+    overrideConfig: {
+      root: true,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+      },
+      parser: gjsGtsParser,
+      plugins: ['ember'],
+      processor: 'ember/noop',
+      rules: {
+        'ember/template-no-bare-strings': 'error',
+      },
+    },
+  });
+}
+
 describe('supports template-lint-disable directive', () => {
   it('disables all rules on the next line with mustache comment', async () => {
     const eslint = initESLintWithTemplateLintDisable();
@@ -945,7 +987,7 @@ describe('supports template-lint-disable directive', () => {
     expect(resultErrors).toHaveLength(0);
   });
 
-  it('disables a specific rule by eslint rule name', async () => {
+  it('disables a specific rule from the comment to end of file', async () => {
     const eslint = initESLintWithTemplateLintDisable();
     const code = `
     <template>
@@ -958,13 +1000,11 @@ describe('supports template-lint-disable directive', () => {
     `;
     const results = await eslint.lintText(code, { filePath: 'my-component.gjs' });
     const resultErrors = results.flatMap((result) => result.messages);
-    // {{test}} on line after disable should be suppressed
-    // {{other}} on the line after that should NOT be suppressed
-    expect(resultErrors).toHaveLength(1);
-    expect(resultErrors[0].message).toBe("'other' is not defined.");
+    // Both {{test}} and {{other}} are within the disable range (no enable), so both suppressed
+    expect(resultErrors).toHaveLength(0);
   });
 
-  it('only disables the next line, not subsequent lines', async () => {
+  it('disables all rules from the comment to end of file when no enable is present', async () => {
     const eslint = initESLintWithTemplateLintDisable();
     const code = `
     <template>
@@ -977,9 +1017,49 @@ describe('supports template-lint-disable directive', () => {
     `;
     const results = await eslint.lintText(code, { filePath: 'my-component.gjs' });
     const resultErrors = results.flatMap((result) => result.messages);
-    // {{test}} suppressed, {{other}} NOT suppressed
+    // Both {{test}} and {{other}} fall within the open range — no errors
+    expect(resultErrors).toHaveLength(0);
+  });
+
+  it('template-lint-enable closes the disable range', async () => {
+    const eslint = initESLintWithTemplateLintDisable();
+    const code = `
+    <template>
+      <div>
+        {{! template-lint-disable }}
+        {{test}}
+        {{! template-lint-enable }}
+        {{other}}
+      </div>
+    </template>
+    `;
+    const results = await eslint.lintText(code, { filePath: 'my-component.gjs' });
+    const resultErrors = results.flatMap((result) => result.messages);
+    // {{test}} is within the range — suppressed
+    // {{other}} is after the enable — NOT suppressed
     expect(resultErrors).toHaveLength(1);
     expect(resultErrors[0].message).toBe("'other' is not defined.");
+  });
+
+  it('template-lint-enable with specific rules closes only matching ranges', async () => {
+    const eslint = initESLintWithTemplateLintDisable();
+    const code = `
+    <template>
+      <div>
+        {{! template-lint-disable no-undef }}
+        {{test}}
+        {{other}}
+        {{! template-lint-enable no-undef }}
+        {{shouldError}}
+      </div>
+    </template>
+    `;
+    const results = await eslint.lintText(code, { filePath: 'my-component.gjs' });
+    const resultErrors = results.flatMap((result) => result.messages);
+    // {{test}} and {{other}} within the range — suppressed
+    // {{shouldError}} after the enable — NOT suppressed
+    expect(resultErrors).toHaveLength(1);
+    expect(resultErrors[0].message).toBe("'shouldError' is not defined.");
   });
 
   it('does not suppress unrelated rules when a specific rule is named', async () => {
@@ -1048,5 +1128,41 @@ describe('supports template-lint-disable directive', () => {
     const resultErrors = results.flatMap((result) => result.messages);
     expect(resultErrors).toHaveLength(1);
     expect(resultErrors[0].message).toBe("'shouldError' is not defined.");
+  });
+});
+
+describe('template-lint-disable works with ember template rules in gts files', () => {
+  it('suppresses ember/template-no-bare-strings within the disable range', async () => {
+    const eslint = initESLintWithTemplateLintDisableAndTemplateRules();
+    const code = `
+import Component from '@glimmer/component';
+export default class MyComponent extends Component {
+  <template>
+    {{! template-lint-disable no-bare-strings }}
+    <span>Hello world</span>
+  </template>
+}
+    `;
+    const results = await eslint.lintText(code, { filePath: 'my-component.gts' });
+    const resultErrors = results.flatMap((r) => r.messages);
+    expect(resultErrors).toHaveLength(0);
+  });
+
+  it('does NOT suppress ember/template-no-bare-strings without the processor (reproduces the missing-processor bug)', async () => {
+    const eslint = initESLintWithoutProcessor();
+    const code = `
+import Component from '@glimmer/component';
+export default class MyComponent extends Component {
+  <template>
+    {{! template-lint-disable no-bare-strings }}
+    <span>Hello world</span>
+  </template>
+}
+    `;
+    const results = await eslint.lintText(code, { filePath: 'my-component.gts' });
+    const resultErrors = results.flatMap((r) => r.messages);
+    // Without the processor the comment is ignored — the error is still reported
+    expect(resultErrors).toHaveLength(1);
+    expect(resultErrors[0].ruleId).toBe('ember/template-no-bare-strings');
   });
 });

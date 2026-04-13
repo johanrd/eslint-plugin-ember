@@ -192,13 +192,22 @@ module.exports = {
 Usage:
 
 ```hbs
-{{! suppress all rules on the next line }}
+{{! disable all rules for the rest of the file (or until template-lint-enable) }}
 {{! template-lint-disable }}
 Hello world
 
-{{! suppress a specific rule }}
+{{! disable a specific rule }}
 {{!-- template-lint-disable no-bare-strings --}}
 Hello world
+
+{{! disable a rule for a block, then re-enable it }}
+{{! template-lint-disable no-bare-strings }}
+Hello world
+{{! template-lint-enable no-bare-strings }}
+More content (no-bare-strings active again)
+
+{{! re-enable all disabled rules }}
+{{! template-lint-enable }}
 ```
 
 Rule names can be specified as:
@@ -208,7 +217,7 @@ Rule names can be specified as:
 - Full ESLint rule IDs: `ember/template-no-bare-strings`, `no-undef`
 
 > [!NOTE]
-> Unlike `ember-template-lint`, this directive only suppresses the **next line** (and the comment line itself). It does not disable rules for the rest of the scope. `template-lint-enable`, `template-lint-disable-next-line`, and `template-lint-disable-tree` are not supported.
+> `template-lint-disable` uses block-scope semantics matching `ember-template-lint`: it disables rules from the comment line until the matching `template-lint-enable` (or end of file). `template-lint-disable-next-line` and `template-lint-disable-tree` are not supported.
 
 Standard ESLint directives also work natively in mustache comments and can be used alongside `template-lint-disable`:
 
