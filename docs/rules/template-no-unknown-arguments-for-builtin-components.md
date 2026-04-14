@@ -1,5 +1,7 @@
 # ember/template-no-unknown-arguments-for-builtin-components
 
+💼 This rule is enabled in the `recommended-template` [config](https://github.com/ember-cli/eslint-plugin-ember#-configurations).
+
 <!-- end auto-generated rule header -->
 
 The builtin components `LinkTo`, `Input`, `Textarea` has list of allowed arguments, and some argument names may be mistyped, this rule trying to highlight possible typos, checking for unknown arguments, also, some components has conflicted and required arguments, rule addressing this behavior.
