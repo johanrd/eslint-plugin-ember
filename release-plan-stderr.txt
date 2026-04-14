@@ -1,0 +1,7 @@
+# Unlabeled Changes
+
+* `eslint-plugin-ember`
+  * [#2695](https://github.com/ember-cli/eslint-plugin-ember/pull/2695) Post-merge-review: Fix template-no-shadowed-elements: align HTML-element detection with upstream ([@johanrd](https://github.com/johanrd))
+
+
+*Cannot plan release until the above changes are labeled*.
