@@ -1,6 +1,6 @@
 # ember/template-simple-modifiers
 
-💼 This rule is enabled in the `recommended-template` [config](https://github.com/ember-cli/eslint-plugin-ember#-configurations).
+💼 This rule is enabled in the 📋 `recommended-template` [config](https://github.com/ember-cli/eslint-plugin-ember#-configurations).
 
 <!-- end auto-generated rule header -->
 
