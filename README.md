@@ -174,6 +174,49 @@ export default [
 
 `recommended-template` mirrors the ember-template-lint `recommended` preset.
 
+### Rewriting `{{! template-lint-disable }}` comments
+
+ESLint does not recognise `template-lint-disable` / `template-lint-enable`
+comments. The plugin ships a codemod that rewrites them to the equivalent
+ESLint-native directives, which this plugin already honours in mustache
+comments inside `.hbs`, `.gjs`, and `.gts` files.
+
+```sh
+# Dry run — reports planned changes and warnings, writes nothing.
+node node_modules/eslint-plugin-ember/scripts/migrate-template-lint-directives.js app/ tests/
+
+# Apply.
+node node_modules/eslint-plugin-ember/scripts/migrate-template-lint-directives.js --write app/ tests/
+```
+
+Example rewrites:
+
+| Before | After |
+| --- | --- |
+| `{{! template-lint-disable no-bare-strings }}` | `{{! eslint-disable ember/template-no-bare-strings }}` |
+| `{{!-- template-lint-disable no-bare-strings --}}` | `{{!-- eslint-disable ember/template-no-bare-strings --}}` |
+| `{{! template-lint-enable no-bare-strings }}` | `{{! eslint-enable ember/template-no-bare-strings }}` |
+| `{{! template-lint-disable }}` (all rules) | `{{! eslint-disable }}` |
+
+Scope carries over directly: a bare disable is line-based block scope — open
+until a matching `eslint-enable` or end of file — which is how ESLint itself
+treats `eslint-disable` / `eslint-enable` pairs.
+
+Directives with no ESLint equivalent are left **unchanged** with a warning:
+
+- `template-lint-disable-tree` / `template-lint-enable-tree` — ESLint has no
+  tree scope. Rewrite manually as a block-scoped `eslint-disable` /
+  `eslint-enable` pair spanning the relevant element.
+- `template-lint-configure` / `template-lint-configure-tree` — in-template
+  rule configuration has no ESLint equivalent. Move the configuration to
+  your flat config file.
+
+Unknown rule names (no matching `ember/template-*` rule in this plugin) are
+still rewritten with a warning so you can review and remove them.
+
+HTML comments (`<!-- template-lint-disable -->`) are not transformed —
+ember-template-lint itself does not parse directives from HTML comments.
+
 ## 🧰 Configurations
 
 <!-- begin auto-generated configs list -->
