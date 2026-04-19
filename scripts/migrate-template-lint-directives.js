@@ -7,12 +7,19 @@ const BLOCK_REGEX = /\{\{!--([\s\S]*?)--\}\}/g;
 const SIMPLE_REGEX = /\{\{!(?!--)([^}]*?)\}\}/g;
 const DIRECTIVE_RE =
   /^template-lint-(disable-tree|enable-tree|configure-tree|disable|enable|configure)(?:\s+([\s\S]*))?$/;
-// Rule names are conventionally lowercase kebab-case with at least one hyphen
-// (all ported template rules follow `no-X`, `require-X`, `attribute-X`, etc.).
-// Requiring a hyphen lets us reject plain words that a user may have written
-// after the rule list (e.g. `template-lint-disable no-bare-strings extra text`)
-// before we emit bogus `ember/template-extra` IDs.
-const VALID_RULE_NAME = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/;
+// Most template rules are kebab-case with at least one hyphen (`no-X`,
+// `require-X`, `attribute-X`, etc.) — but a few are single words (e.g.
+// `quotes`). A simple hyphen-only check would reject the single-word names.
+// Instead, accept a token if either:
+//   (a) the plugin already knows a rule with that name (`template-<token>`), or
+//   (b) the token looks like kebab-case with at least one hyphen.
+// (b) covers unknown-but-well-formed names (warned separately); together they
+// reject plain prose tokens like `extra text` so we don't emit bogus
+// `ember/template-extra` IDs.
+const KEBAB_WITH_HYPHEN = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/;
+function looksLikeRuleName(token, knownRules) {
+  return knownRules.has(`template-${token}`) || KEBAB_WITH_HYPHEN.test(token);
+}
 
 function parseRules(rest) {
   return rest
@@ -20,10 +27,13 @@ function parseRules(rest) {
     .filter(Boolean)
     .map((r) =>
       r
+        // Strip trailing commas first — common typo for users migrating from
+        // ESLint habits. Must run before the paired-quote pass so that
+        // `'foo',` becomes `'foo'` and then gets unquoted to `foo` (instead
+        // of the paired-quote check failing because the `,` breaks the pair).
+        .replace(/,+$/, '')
         // Strip paired surrounding quotes (matches ETL's unquote behavior).
         .replace(/^(['"])(.*)\1$/, '$2')
-        // Strip trailing commas — common typo for users migrating from ESLint habits.
-        .replace(/,+$/, '')
     );
 }
 
@@ -47,7 +57,7 @@ function rewriteDirective(body, form, knownRules, warn) {
   }
 
   const rules = parseRules(rest);
-  const invalid = rules.filter((r) => !VALID_RULE_NAME.test(r));
+  const invalid = rules.filter((r) => !looksLikeRuleName(r, knownRules));
   if (invalid.length > 0) {
     // Malformed rule list (trailing prose, special chars, etc.) — refuse to
     // rewrite rather than emit bogus ESLint directives like "ember/template-extra".
@@ -190,6 +200,9 @@ if (require.main === module) {
       hadInputError = true;
     }
   }
+  // Continue processing valid inputs even if some were bad — migrations are
+  // usually run in bulk, and a typo in one path shouldn't stop work on the
+  // others. The non-zero exit code surfaces the error for CI.
   if (hadInputError) process.exitCode = 1;
 
   let changedFiles = 0;

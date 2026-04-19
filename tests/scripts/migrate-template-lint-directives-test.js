@@ -6,6 +6,9 @@ const KNOWN = new Set([
   'template-no-bare-strings',
   'template-no-invalid-role',
   'template-no-implicit-this',
+  // Single-word rule name — a real ETL/plugin rule (`template-quotes.js`).
+  // Exercises the layered validator that accepts known single-word rules.
+  'template-quotes',
 ]);
 
 function run(input) {
@@ -72,13 +75,31 @@ describe('migrate-template-lint-directives', () => {
       expect(output).toBe('{{! eslint-disable ember/template-no-bare-strings }}');
     });
 
-    it('handles CRLF line endings', () => {
-      const { output } = run(
-        '{{! template-lint-disable no-bare-strings }}\r\n<span>a</span>\r\n'
+    it('handles CRLF line endings and counts lines across them', () => {
+      // The -tree directive is on source line 4 (CRLF-separated). Previously
+      // we only verified CRLF preservation; this version also pressures the
+      // line-number computation so a regression in `computeLine` that drops
+      // CRLF handling would fail here.
+      const input =
+        '{{! template-lint-disable no-bare-strings }}\r\n' +
+        '<span>a</span>\r\n' +
+        '<span>b</span>\r\n' +
+        '{{! template-lint-disable-tree no-invalid-role }}\r\n';
+      const { output, warnings } = run(input);
+      expect(output.startsWith('{{! eslint-disable ember/template-no-bare-strings }}\r\n')).toBe(
+        true
       );
-      expect(output).toBe(
-        '{{! eslint-disable ember/template-no-bare-strings }}\r\n<span>a</span>\r\n'
-      );
+      expect(output).toContain('<span>a</span>\r\n');
+      expect(warnings).toHaveLength(1);
+      expect(warnings[0]).toMatch(/^line 4:/);
+    });
+
+    it('rewrites a single-word rule name that exists in the plugin (e.g. quotes)', () => {
+      // Would regress if the validator required a hyphen unconditionally —
+      // `template-quotes` is a real single-word ETL/plugin rule.
+      const { output, warnings } = run('{{! template-lint-disable quotes }}');
+      expect(output).toBe('{{! eslint-disable ember/template-quotes }}');
+      expect(warnings).toHaveLength(0);
     });
   });
 
@@ -287,6 +308,13 @@ describe('parseRules', () => {
 
   it('strips trailing commas', () => {
     expect(parseRules('a, b,, c')).toEqual(['a', 'b', 'c']);
+  });
+
+  it('strips both a surrounding quote pair and a trailing comma (order-sensitive)', () => {
+    // Trailing comma must be stripped before the paired-quote pass, otherwise
+    // `'foo',` would fail the paired-quote check (`'` != `,`) and keep its
+    // quotes, yielding `"'foo'"` which later fails validation.
+    expect(parseRules(`'foo', "bar",`)).toEqual(['foo', 'bar']);
   });
 
   it('splits on any whitespace', () => {
