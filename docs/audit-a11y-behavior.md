@@ -173,22 +173,179 @@ Fixes #1 and #2 share a single change: make `isHidden` accept boolean `aria-hidd
 
 ---
 
+---
+
+## Concept 7 — `aria-unsupported-elements`
+
+**Our rule:** `template-no-aria-unsupported-elements`
+**Peers:** jsx-a11y, vue-a11y, lit-a11y
+**Fixture:** `tests/audit/aria-unsupported-elements/peer-parity.js` (34 cases)
+
+### Divergences
+1. **Narrower element set** — upstream (via `aria-query`'s `dom.reserved`) covers `col`, `colgroup`, `noembed`, `noscript`, `param`, `picture`, `source`, `track` on top of our `meta`/`html`/`script`/`style`/`title`/`base`/`head`/`link`. **Minor bug** — we silently accept ARIA attrs on ~half the reserved elements.
+2. **Unknown `aria-*` attrs** — upstream uses `aria.has(name)` so `aria-foobar` is skipped; we flag anything `aria-*`-prefixed. Minor overreach, probably defensible.
+
+---
+
+## Concept 8 — `no-redundant-roles`
+
+**Our rule:** `template-no-redundant-role`
+**Peers:** jsx-a11y, vue-a11y, lit-a11y
+**Fixture:** `tests/audit/no-redundant-roles/peer-parity.js` (32 cases)
+
+### Divergences
+1. **`<ul role="list">` / `<ol role="list">`** — upstream (jsx-a11y) INVALID; we VALID via `ALLOWED_ELEMENT_ROLES`. **Intentional** — Safari/VoiceOver workaround (when CSS `list-style:none` strips list semantics).
+2. **`<a role="link">`** — upstream only flags if `href` present (since implicit role requires href); ours always accepts. Intentional.
+3. **`<select role="combobox">`** — upstream INVALID (select's implicit role is combobox); ours VALID. **Minor bug** — missing mapping.
+4. **Case sensitivity** — upstream lowercases (`<body role="DOCUMENT">` flagged); ours case-sensitive. **Minor bug**, cheap fix.
+
+---
+
+## Concept 9 — `role-has-required-aria`
+
+**Our rule:** `template-require-mandatory-role-attributes`
+**Peers:** jsx-a11y, vue-a11y, angular, lit-a11y
+**Fixture:** `tests/audit/role-has-required-aria/peer-parity.js` (30 cases)
+
+### Divergences
+1. **`<input type="checkbox" role="switch">`** — jsx-a11y/vue/angular: VALID (semantic checkbox supplies `aria-checked`); ours: INVALID. **Bug** — this pattern is explicitly documented as accessible in WAI-ARIA APG.
+2. **Space-separated roles** (`role="combobox listbox"`) — upstream splits and validates each; we look up the whole string, find nothing, and skip silently. Minor bug (false negative on an unusual pattern).
+3. **Case-insensitivity** — upstream lowercases before lookup; we pass raw to aria-query so `role="COMBOBOX"` misses. Minor bug.
+
+---
+
+## Concept 10 — `role-supports-aria-props`
+
+**Our rule:** `template-no-unsupported-role-attributes`
+**Peers:** jsx-a11y, lit-a11y
+**Fixture:** `tests/audit/role-supports-aria-props/peer-parity.js` (32 cases)
+
+### Divergences
+1. **`<a>` without `href`** — upstream: no implicit role (so global ARIA attrs apply); ours: returns "generic" and flags. **Bug** — our `getImplicitRole` helper picks the first `elementRoles` entry regardless of `constraints`.
+2. **`<input type="password|email|text|…">`** without a `list` attr — upstream yields "textbox"; we pick the first matching entry so return "combobox" for email/text/tel/url, "button" for password (not in aria-query at all). **Bug** — same root cause as #1.
+3. **`<menu type="toolbar">`, `<body>`** — cosmetic message wording only; both flag the same attrs.
+
+**Single root cause:** `getImplicitRole` doesn't honor aria-query's attribute `constraints` ("set"/"not set"). Fixing that helper alone likely resolves #1 and #2 in one change.
+
+---
+
+## Concept 11 — `label-form-association`
+
+**Our rule:** `template-require-input-label`
+**Peers:** jsx-a11y (split 3 ways), vue-a11y, angular
+**Fixture:** `tests/audit/label-form-association/peer-parity.js` (43 cases)
+
+### Scope note
+Our single rule covers the control-perspective subset; jsx-a11y splits into `label-has-for`, `label-has-associated-control`, and `control-has-associated-label`. We don't lint from the `<label>` perspective at all.
+
+### Divergences
+1. **`<input type="button|submit|reset|image">`** — vue-a11y VALID (exempts these types); ours INVALID. Minor false positive — `value` attr typically supplies the accessible name.
+2. **Multiple labels** — upstream VALID ("has SOME label"); ours INVALID (`multipleLabels`). Intentional-strict.
+3. **No label-perspective errors** — upstream flags `<label htmlFor="x" />` (empty) and `<label>Text</label>` (no control); ours has no analogue. **Scope gap** — coverage hole if peer parity is the goal.
+
+---
+
+## Concept 12 — `aria-activedescendant-has-tabindex`
+
+**Our rule:** `template-require-aria-activedescendant-tabindex`
+**Peers:** jsx-a11y, lit-a11y
+**Fixture:** `tests/audit/aria-activedescendant-has-tabindex/peer-parity.js` (33 cases)
+
+### Divergences
+1. **`tabindex="-1"` / `tabindex={{-1}}`** on non-interactive element — jsx-a11y + lit-a11y: VALID (they accept `tabindex >= -1`); ours: INVALID (we require `>= 0`). **Bug** — `-1` is the canonical "focusable but not in tab order" value, which is exactly what a composite widget with `aria-activedescendant` + roving focus wants. Our autofix rewrites `-1` → `0`, **silently changing semantics** (injecting the element into tab order when it shouldn't be).
+2. **`tabindex="-1"`** on interactive `<button>` — same root cause, same bug.
+
+**Shipping this fix would likely also drop an existing false-positive-autofix in the wild.**
+
+---
+
+## Concept 13 — `tabindex-no-positive`
+
+**Our rule:** `template-no-positive-tabindex`
+**Peers:** jsx-a11y, vue-a11y, angular, lit-a11y
+**Fixture:** `tests/audit/tabindex-no-positive/peer-parity.js` (40 cases)
+
+### Divergences
+1. **Non-numeric literal** (`tabindex="text"`) — jsx-a11y/vue/angular: VALID (skip when NaN); lit-a11y + ours: INVALID. Intentional-strict (lit-a11y parity).
+2. **Dynamic expression** (`tabindex={{someProperty}}`) — all 4 peers: VALID (can't statically know); ours: INVALID. Intentional-strict, but false-positive-prone.
+3. **Valueless `tabindex`** — angular VALID; ours INVALID. Minor edge case.
+
+---
+
+## Concept 14 — `no-access-key`
+
+**Our rule:** `template-no-accesskey-attribute`
+**Peers:** jsx-a11y, vue-a11y, lit-a11y
+**Fixture:** `tests/audit/no-access-key/peer-parity.js` (17 cases)
+
+### Divergences
+1. **Boolean/valueless `accesskey`** — peers: VALID (value-checked); ours: INVALID (presence-only). Intentional-strict — HTML parses valueless `accesskey` as empty-string which a UA may still register.
+2. **`accesskey={{undefined}}` / `accesskey=""`** — peers: VALID; ours: INVALID. Same root cause. Minor, defensible on strict grounds.
+
+---
+
+## Findings summary — ranked
+
+### Must-fix bugs (clear false positives/negatives with strong spec backing)
+
+| # | Concept | Divergence | Fix shape |
+|---|---|---|---|
+| B1 | aria-activedescendant-has-tabindex | Flags `tabindex="-1"`, autofixes to `0` — wrecks roving focus | Accept `tabindex >= -1`; do not autofix `-1` |
+| B2 | role-has-required-aria | `<input type="checkbox" role="switch">` flagged despite APG documenting as accessible | Treat semantic input as contributing implicit aria-* from native state |
+| B3 | role-supports-aria-props | `<a>` without href → "generic" instead of no role; `<input type=password>` → "button" etc. | Honor aria-query's attribute constraints in `getImplicitRole` |
+| B4 | heading-has-content | `<h1 aria-hidden />` (valueless boolean attr) flagged because we only match `aria-hidden="true"` literal | Accept boolean attr; spec-check first |
+
+### Minor bugs (false positives or small gaps, low-risk fixes)
+
+| # | Concept | Fix shape |
+|---|---|---|
+| m5 | media-has-caption | Lowercase `kind` before compare |
+| m6 | iframe-title | Accept whitespace-only title (or trim before emptiness check); flag `title={undefined}` / `title=""` / `title={42}` |
+| m7 | aria-unsupported-elements | Extend element set to match `aria-query`'s `dom.reserved` |
+| m8 | no-redundant-roles | Lowercase role; add `select`→combobox mapping |
+| m9 | role-has-required-aria | Split space-separated roles; lowercase |
+| m10 | aria-role (template-no-invalid-role) | Split space-separated roles; migrate to aria-query (covers DPUB/Graphics; fixes space-sep in one shot) |
+| m11 | alt-text | Flag empty-string `aria-label`/`aria-labelledby` on `<object>`/`<area>`/`<input type=image>` |
+
+### Intentional divergences (document, don't change)
+
+- aria-role: case-insensitive role value (ours; upstream is case-sensitive)
+- alt-text: `<img aria-label>` without alt (we require alt; upstream accepts aria-label)
+- alt-text: non-empty alt with `role="presentation"` (we flag; upstream accepts)
+- scope: value validation (we don't validate `scope="column"`; lit-a11y does)
+- iframe-title: `aria-hidden`/`hidden` exemption (we exempt; upstream doesn't)
+- iframe-title: duplicate-title detection (ours only)
+- heading-has-content: `role="heading"` coverage (ours only)
+- no-redundant-roles: `<ul role="list">` / `<a role="link">` without href (we accept — documented Safari/VoiceOver workarounds)
+- tabindex-no-positive: non-numeric and dynamic values (we flag; most peers skip)
+- no-access-key: boolean/valueless/empty accesskey (we flag as presence)
+- label-form-association: multiple labels (we flag; peers accept)
+
+### Coverage gaps (vs peers; not bugs, but missing features)
+
+- label-form-association: no `<label>`-perspective checks (empty label, label-without-control)
+- Missing rules for M1–M17 concepts from parity matrix (click-events/mouse-events/no-aria-hidden-on-focusable/etc.) — see `audit-a11y-parity.md`
+
+---
+
 ## Progress tracker
 
 | Concept | Status | Fixture | Divergences found |
 |---|---|---|---|
-| aria-role | ✅ complete | aria-role/peer-parity.js | 5 (2 bugs, 1 intentional, 2 minor) |
-| aria-props | ✅ surveyed — no action | — | 0 |
-| alt-text | ✅ complete | alt-text/peer-parity.js | 3 (1 bug, 2 intentional) |
-| iframe-title | ✅ complete | iframe-title/peer-parity.js | 4 (2 minor bugs, 2 intentional) |
-| media-has-caption | ✅ complete | media-has-caption/peer-parity.js | 1 (bug — 1-line fix) |
-| scope on th | ✅ complete | scope/peer-parity.js | 1 (intentional) |
-| heading-has-content | ✅ complete | heading-content/peer-parity.js | 4 (2 bugs with shared fix, 2 minor/intentional) |
-| aria-unsupported-elements | ⏳ agent in progress | (pending commit) | — |
-| no-redundant-roles | ⏳ agent in progress | — | — |
-| role-has-required-aria | ⏳ agent in progress | — | — |
-| role-supports-aria-props | ⏳ agent in progress | — | — |
-| label-form-association | ⏳ agent in progress | — | — |
-| aria-activedescendant-has-tabindex | ⏳ agent in progress | — | — |
-| tabindex-no-positive | ⏳ agent in progress | — | — |
-| no-access-key | ⏳ agent in progress | — | — |
+| aria-role | ✅ | aria-role/peer-parity.js | 5 (2 bugs, 1 intentional, 2 minor) |
+| aria-props | ✅ (survey only) | — | 0 |
+| alt-text | ✅ | alt-text/peer-parity.js | 3 (1 bug, 2 intentional) |
+| iframe-title | ✅ | iframe-title/peer-parity.js | 4 (2 minor, 2 intentional) |
+| media-has-caption | ✅ | media-has-caption/peer-parity.js | 1 (1-line bug fix) |
+| scope on th | ✅ | scope/peer-parity.js | 1 (intentional) |
+| heading-has-content | ✅ | heading-content/peer-parity.js | 4 (2 bugs shared fix, 2 intentional) |
+| aria-unsupported-elements | ✅ | aria-unsupported-elements/peer-parity.js | 2 (1 minor bug, 1 intentional) |
+| no-redundant-roles | ✅ | no-redundant-roles/peer-parity.js | 4 (2 minor bugs, 2 intentional) |
+| role-has-required-aria | ✅ | role-has-required-aria/peer-parity.js | 3 (1 bug, 2 minor bugs) |
+| role-supports-aria-props | ✅ | role-supports-aria-props/peer-parity.js | 4 (1 root-cause bug, 3 cosmetic/shared) |
+| label-form-association | ✅ | label-form-association/peer-parity.js | 3 (1 false positive, 1 intentional, 1 scope gap) |
+| aria-activedescendant-has-tabindex | ✅ | aria-activedescendant-has-tabindex/peer-parity.js | 2 (1 bug — semantic autofix hazard) |
+| tabindex-no-positive | ✅ | tabindex-no-positive/peer-parity.js | 3 (all intentional-strict) |
+| no-access-key | ✅ | no-access-key/peer-parity.js | 2 (both intentional-strict) |
+
+**14 concepts audited. 448 test cases across the fixtures; all passing. Findings → 4 must-fix bugs, 7 minor bugs, 11 intentional divergences, 1 scope gap.**
