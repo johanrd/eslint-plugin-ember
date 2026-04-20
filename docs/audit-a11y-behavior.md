@@ -117,6 +117,62 @@ Sampled jsx-a11y tests (`__tests__/src/rules/aria-props-test.js`) don't suggest 
 
 ---
 
+---
+
+## Concept 3 — `iframe-title`
+
+**Our rule:** `template-require-iframe-title`
+**Peers:** jsx-a11y, vue-a11y, lit-a11y
+**Fixture:** `tests/audit/iframe-title/peer-parity.js` (30 cases)
+
+### Divergences
+1. **`aria-hidden`/`hidden` exemption** — upstream still requires title; we exempt. Intentional (inherited from ember-template-lint).
+2. **Dynamic non-string values** — upstream flags `title={undefined}`/`title={42}`/`title=""`; we only AST-check `GlimmerBooleanLiteral`, accepting everything else. Minor under-flag.
+3. **Whitespace-only title** — upstream accepts (yields truthy string); we trim and reject. Minor over-flag.
+4. **Duplicate-title detection** — ours flags duplicates; upstream doesn't. Intentional extension.
+
+---
+
+## Concept 4 — `media-has-caption`
+
+**Our rule:** `template-require-media-caption`
+**Peers:** jsx-a11y, vue-a11y
+**Fixture:** `tests/audit/media-has-caption/peer-parity.js` (26 cases)
+
+### Divergences
+1. **Case-sensitive `kind="captions"`** — upstream lowercases; we don't. `kind="Captions"` → upstream VALID, ours INVALID. **Minor bug, 1-line fix.**
+
+Otherwise full parity on muted handling, track-kind subtitles, missing track, text-content-doesn't-count.
+
+---
+
+## Concept 5 — `scope`
+
+**Our rule:** `template-no-scope-outside-table-headings`
+**Peers:** jsx-a11y, angular, lit-a11y
+**Fixture:** `tests/audit/scope/peer-parity.js` (27 cases)
+
+### Divergences
+1. **Value validation** — lit-a11y also flags invalid `scope` values (`<th scope="column">` → should be `col`); ours only checks host element. Intentional — value validation is out of this rule's stated purpose. jsx-a11y and angular align with us.
+
+---
+
+## Concept 6 — `heading-has-content`
+
+**Our rule:** `template-no-empty-headings`
+**Peers:** jsx-a11y, vue-a11y
+**Fixture:** `tests/audit/heading-content/peer-parity.js` (36 cases)
+
+### Divergences
+1. **Boolean `aria-hidden` on heading** — `<h1 aria-hidden />` with no value: upstream exempts (treats boolean attr as true), we flag. **False positive.**
+2. **Boolean `aria-hidden` on child** — same root cause as #1. **False negative / under-flag.**
+3. **`{{undefined}}` mustache** — upstream flags empty-value mustache; we treat any mustache as potential content. Minor under-flag.
+4. **`role="heading"` coverage** — we flag empty `<div role="heading">`; upstream doesn't check role-based headings. Intentional extension.
+
+Fixes #1 and #2 share a single change: make `isHidden` accept boolean `aria-hidden` as hidden. Spec check recommended — ARIA technically treats missing value as "undefined" rather than "true", but HTML attr-presence-is-true is the prevailing tooling convention.
+
+---
+
 ## Progress tracker
 
 | Concept | Status | Fixture | Divergences found |
@@ -124,15 +180,15 @@ Sampled jsx-a11y tests (`__tests__/src/rules/aria-props-test.js`) don't suggest 
 | aria-role | ✅ complete | aria-role/peer-parity.js | 5 (2 bugs, 1 intentional, 2 minor) |
 | aria-props | ✅ surveyed — no action | — | 0 |
 | alt-text | ✅ complete | alt-text/peer-parity.js | 3 (1 bug, 2 intentional) |
-| aria-unsupported-elements | ⏳ pending | — | — |
-| no-redundant-roles | ⏳ pending | — | — |
-| role-has-required-aria | ⏳ pending | — | — |
-| role-supports-aria-props | ⏳ pending | — | — |
-| label-form-association | ⏳ pending | — | — |
-| aria-activedescendant-has-tabindex | ⏳ pending | — | — |
-| iframe-title | ⏳ pending | — | — |
-| media-has-caption | ⏳ pending | — | — |
-| scope on th | ⏳ pending | — | — |
-| tabindex-no-positive | ⏳ pending | — | — |
-| heading-has-content | ⏳ pending | — | — |
-| no-access-key | ⏳ pending | — | — |
+| iframe-title | ✅ complete | iframe-title/peer-parity.js | 4 (2 minor bugs, 2 intentional) |
+| media-has-caption | ✅ complete | media-has-caption/peer-parity.js | 1 (bug — 1-line fix) |
+| scope on th | ✅ complete | scope/peer-parity.js | 1 (intentional) |
+| heading-has-content | ✅ complete | heading-content/peer-parity.js | 4 (2 bugs with shared fix, 2 minor/intentional) |
+| aria-unsupported-elements | ⏳ agent in progress | (pending commit) | — |
+| no-redundant-roles | ⏳ agent in progress | — | — |
+| role-has-required-aria | ⏳ agent in progress | — | — |
+| role-supports-aria-props | ⏳ agent in progress | — | — |
+| label-form-association | ⏳ agent in progress | — | — |
+| aria-activedescendant-has-tabindex | ⏳ agent in progress | — | — |
+| tabindex-no-positive | ⏳ agent in progress | — | — |
+| no-access-key | ⏳ agent in progress | — | — |
