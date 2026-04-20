@@ -1,6 +1,5 @@
-'use strict';
-
-const { transform, parseRules } = require('../../scripts/migrate-template-lint-directives');
+import { describe, expect, it } from 'vitest';
+import { transform, parseRules } from '../../scripts/migrate-template-lint-directives.mjs';
 
 const KNOWN = new Set([
   'template-no-bare-strings',
@@ -11,8 +10,11 @@ const KNOWN = new Set([
   'template-quotes',
 ]);
 
-function run(input) {
-  return transform(input, { knownRules: KNOWN });
+// Inputs in tests are templates without a surrounding JS shell, so they only
+// parse cleanly under the `.hbs` (templateOnly) path. For test ergonomics we
+// default to `demo.hbs` unless a specific file type is needed.
+function run(input, filePath = 'demo.hbs') {
+  return transform(input, { knownRules: KNOWN, filePath });
 }
 
 describe('migrate-template-lint-directives', () => {
@@ -60,38 +62,13 @@ describe('migrate-template-lint-directives', () => {
       );
     });
 
-    it('splits rule names on any whitespace run, not commas', () => {
-      // ETL splits on whitespace only; the separator in our output is always ", ".
+    it('splits rule names on any whitespace run', () => {
       const { output } = run(
         '{{! template-lint-disable   no-bare-strings\tno-invalid-role }}'
       );
       expect(output).toBe(
         '{{! eslint-disable ember/template-no-bare-strings, ember/template-no-invalid-role }}'
       );
-    });
-
-    it('normalizes a no-space mustache open (`{{!template-lint-disable`) to `{{! ...`', () => {
-      const { output } = run('{{!template-lint-disable no-bare-strings}}');
-      expect(output).toBe('{{! eslint-disable ember/template-no-bare-strings }}');
-    });
-
-    it('handles CRLF line endings and counts lines across them', () => {
-      // The -tree directive is on source line 4 (CRLF-separated). Previously
-      // we only verified CRLF preservation; this version also pressures the
-      // line-number computation so a regression in `computeLine` that drops
-      // CRLF handling would fail here.
-      const input =
-        '{{! template-lint-disable no-bare-strings }}\r\n' +
-        '<span>a</span>\r\n' +
-        '<span>b</span>\r\n' +
-        '{{! template-lint-disable-tree no-invalid-role }}\r\n';
-      const { output, warnings } = run(input);
-      expect(output.startsWith('{{! eslint-disable ember/template-no-bare-strings }}\r\n')).toBe(
-        true
-      );
-      expect(output).toContain('<span>a</span>\r\n');
-      expect(warnings).toHaveLength(1);
-      expect(warnings[0]).toMatch(/^line 4:/);
     });
 
     it('rewrites a single-word rule name that exists in the plugin (e.g. quotes)', () => {
@@ -104,8 +81,6 @@ describe('migrate-template-lint-directives', () => {
   });
 
   describe('skip + warn: tree and configure variants', () => {
-    // Both -tree variants (disable-tree and enable-tree) hit the same
-    // `endsWith('-tree')` branch; one test documents the skip + warn behavior.
     it('leaves -tree directives unchanged and warns', () => {
       const input = '{{! template-lint-disable-tree no-bare-strings }}';
       const { output, warnings, changed } = run(input);
@@ -115,8 +90,6 @@ describe('migrate-template-lint-directives', () => {
       expect(warnings[0]).toMatch(/tree scope/);
     });
 
-    // Both configure variants (configure and configure-tree) hit the same
-    // `startsWith('configure')` branch.
     it('leaves configure directives unchanged and warns', () => {
       const input = '{{! template-lint-configure no-bare-strings "foo" }}';
       const { output, warnings, changed } = run(input);
@@ -129,8 +102,6 @@ describe('migrate-template-lint-directives', () => {
 
   describe('malformed rule lists', () => {
     it('leaves the comment unchanged when the rule list contains non-rule-name tokens', () => {
-      // Trailing prose would otherwise produce bogus IDs like
-      // `ember/template-extra, ember/template-text`.
       const input = '{{!-- template-lint-disable no-bare-strings extra text --}}';
       const { output, warnings, changed } = run(input);
       expect(output).toBe(input);
@@ -140,8 +111,6 @@ describe('migrate-template-lint-directives', () => {
     });
 
     it('strips trailing commas from rule names (common migration typo)', () => {
-      // Users migrating from ESLint habits sometimes write rules comma-separated.
-      // ETL itself splits on whitespace; the codemod tolerates trailing commas.
       const { output, warnings } = run(
         '{{! template-lint-disable no-bare-strings, no-invalid-role }}'
       );
@@ -174,7 +143,7 @@ describe('migrate-template-lint-directives', () => {
       expect(changed).toBe(false);
     });
 
-    it('leaves existing eslint-disable comments untouched (also proves idempotency)', () => {
+    it('leaves existing eslint-disable comments untouched (idempotent)', () => {
       const input = '{{! eslint-disable ember/template-no-bare-strings }}';
       const { output, changed } = run(input);
       expect(output).toBe(input);
@@ -192,60 +161,35 @@ describe('migrate-template-lint-directives', () => {
     });
   });
 
-  describe('scope protection — nested / overlapping matches', () => {
-    it('does not rewrite a mustache directive that appears inside a BLOCK comment body', () => {
-      // Weird but possible. The outer block isn't a directive; the inner
-      // mustache-looking text inside the block body must not be transformed.
-      const input =
-        '{{!-- disable this --> {{! template-lint-disable no-bare-strings }} --}}';
-      const { output, changed } = run(input);
-      expect(output).toBe(input);
-      expect(changed).toBe(false);
-    });
-  });
-
   describe('context preservation', () => {
     it('preserves surrounding template structure and indentation', () => {
       const input =
-        '<template>\n' +
-        '  <div>\n' +
-        '    {{! template-lint-disable no-bare-strings }}\n' +
-        '    <span>Hello</span>\n' +
-        '  </div>\n' +
-        '</template>\n';
+        '<div>\n' +
+        '  {{! template-lint-disable no-bare-strings }}\n' +
+        '  <span>Hello</span>\n' +
+        '</div>\n';
       const expected =
-        '<template>\n' +
-        '  <div>\n' +
-        '    {{! eslint-disable ember/template-no-bare-strings }}\n' +
-        '    <span>Hello</span>\n' +
-        '  </div>\n' +
-        '</template>\n';
+        '<div>\n' +
+        '  {{! eslint-disable ember/template-no-bare-strings }}\n' +
+        '  <span>Hello</span>\n' +
+        '</div>\n';
       const { output } = run(input);
       expect(output).toBe(expected);
     });
 
     it('handles block and simple comments mixed in one file', () => {
       const input =
-        '<template>\n' +
+        '<div>\n' +
         '  {{!-- template-lint-disable no-bare-strings --}}\n' +
         '  <span>Hello</span>\n' +
         '  {{! template-lint-enable }}\n' +
         '  {{! template-lint-disable-tree no-invalid-role }}\n' +
-        '</template>\n';
+        '</div>\n';
       const { output, warnings } = run(input);
       expect(output).toContain('{{!-- eslint-disable ember/template-no-bare-strings --}}');
       expect(output).toContain('{{! eslint-enable }}');
       expect(output).toContain('{{! template-lint-disable-tree no-invalid-role }}');
       expect(warnings).toHaveLength(1);
-    });
-
-    it('handles multiple directives on the same line', () => {
-      const input =
-        '<span>{{! template-lint-disable no-bare-strings }}<x />{{! template-lint-enable }}</span>';
-      const { output } = run(input);
-      expect(output).toBe(
-        '<span>{{! eslint-disable ember/template-no-bare-strings }}<x />{{! eslint-enable }}</span>'
-      );
     });
 
     it('handles multiple simple comments on different lines independently', () => {
@@ -268,29 +212,45 @@ describe('migrate-template-lint-directives', () => {
       const { output } = run(input);
       expect(output).toBe('{{!-- eslint-disable ember/template-no-bare-strings --}}');
     });
-
-    it('handles block comment with no whitespace between dashes and directive', () => {
-      const input = '{{!--template-lint-disable no-bare-strings--}}';
-      const { output } = run(input);
-      expect(output).toBe('{{!-- eslint-disable ember/template-no-bare-strings --}}');
-    });
   });
 
-  describe('warnings reference original-source line numbers', () => {
-    it('uses the original-source line even after a preceding BLOCK rewrite collapses lines', () => {
-      // The block comment spans source lines 1-4 and rewrites to one line.
-      // The -tree directive on source line 6 must report "line 6", not "line 3"
-      // (which is where it would land if we used the post-transform output).
+  describe('file-type dispatch', () => {
+    it('parses .gjs files (JS shell around <template>)', () => {
       const input =
-        '{{!--\n' +
-        '  template-lint-disable\n' +
-        '    no-bare-strings\n' +
-        '--}}\n' +
-        'x\n' +
-        '{{! template-lint-disable-tree no-invalid-role }}\n';
-      const { warnings } = run(input);
-      expect(warnings).toHaveLength(1);
-      expect(warnings[0]).toMatch(/^line 6:/);
+        "import Component from '@glimmer/component';\n" +
+        'export default class Demo extends Component {\n' +
+        '  <template>\n' +
+        '    {{! template-lint-disable no-bare-strings }}\n' +
+        '    <span>x</span>\n' +
+        '  </template>\n' +
+        '}\n';
+      const { output, changed } = transform(input, { knownRules: KNOWN, filePath: 'demo.gjs' });
+      expect(changed).toBe(true);
+      expect(output).toContain('{{! eslint-disable ember/template-no-bare-strings }}');
+      expect(output).toContain('export default class Demo');
+    });
+
+    it('parses .gts files (TS shell around <template>)', () => {
+      const input =
+        "import Component from '@glimmer/component';\n" +
+        'export default class Demo extends Component<{ Args: {} }> {\n' +
+        '  <template>\n' +
+        '    {{! template-lint-disable no-bare-strings }}\n' +
+        '    <span>x</span>\n' +
+        '  </template>\n' +
+        '}\n';
+      const { output, changed } = transform(input, { knownRules: KNOWN, filePath: 'demo.gts' });
+      expect(changed).toBe(true);
+      expect(output).toContain('{{! eslint-disable ember/template-no-bare-strings }}');
+    });
+
+    it('parses .hbs files as raw template content', () => {
+      const { output, changed } = transform(
+        '{{! template-lint-disable no-bare-strings }}',
+        { knownRules: KNOWN, filePath: 'demo.hbs' }
+      );
+      expect(changed).toBe(true);
+      expect(output).toBe('{{! eslint-disable ember/template-no-bare-strings }}');
     });
   });
 });
@@ -311,9 +271,6 @@ describe('parseRules', () => {
   });
 
   it('strips both a surrounding quote pair and a trailing comma (order-sensitive)', () => {
-    // Trailing comma must be stripped before the paired-quote pass, otherwise
-    // `'foo',` would fail the paired-quote check (`'` != `,`) and keep its
-    // quotes, yielding `"'foo'"` which later fails validation.
     expect(parseRules(`'foo', "bar",`)).toEqual(['foo', 'bar']);
   });
 

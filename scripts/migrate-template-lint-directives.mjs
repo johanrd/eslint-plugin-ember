@@ -1,10 +1,11 @@
-'use strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { z } from 'zmod';
+import { emberParser } from 'zmod-ember';
 
-const fs = require('fs');
-const path = require('path');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const BLOCK_REGEX = /\{\{!--([\s\S]*?)--\}\}/g;
-const SIMPLE_REGEX = /\{\{!(?!--)([^}]*?)\}\}/g;
 const DIRECTIVE_RE =
   /^template-lint-(disable-tree|enable-tree|configure-tree|disable|enable|configure)(?:\s+([\s\S]*))?$/;
 // Most template rules are kebab-case with at least one hyphen (`no-X`,
@@ -21,7 +22,7 @@ function looksLikeRuleName(token, knownRules) {
   return knownRules.has(`template-${token}`) || KEBAB_WITH_HYPHEN.test(token);
 }
 
-function parseRules(rest) {
+export function parseRules(rest) {
   return rest
     .split(/\s+/)
     .filter(Boolean)
@@ -37,7 +38,7 @@ function parseRules(rest) {
     );
 }
 
-function rewriteDirective(body, form, knownRules, warn) {
+function analyzeDirective(body, knownRules, warn) {
   const match = body.trim().match(DIRECTIVE_RE);
   if (!match) return null;
   const name = match[1];
@@ -59,8 +60,6 @@ function rewriteDirective(body, form, knownRules, warn) {
   const rules = parseRules(rest);
   const invalid = rules.filter((r) => !looksLikeRuleName(r, knownRules));
   if (invalid.length > 0) {
-    // Malformed rule list (trailing prose, special chars, etc.) — refuse to
-    // rewrite rather than emit bogus ESLint directives like "ember/template-extra".
     warn(
       `rule list contains tokens that are not valid rule names: ${invalid
         .map((r) => JSON.stringify(r))
@@ -78,66 +77,58 @@ function rewriteDirective(body, form, knownRules, warn) {
     );
   }
 
-  const action = name === 'disable' ? 'eslint-disable' : 'eslint-enable';
+  return { action: name === 'disable' ? 'eslint-disable' : 'eslint-enable', rules };
+}
+
+function formatComment(action, rules, longForm) {
   const mapped = rules.map((r) => `ember/template-${r}`);
   const ruleList = mapped.length > 0 ? ' ' + mapped.join(', ') : '';
-  return form === 'block'
-    ? `{{!-- ${action}${ruleList} --}}`
-    : `{{! ${action}${ruleList} }}`;
+  return longForm ? `{{!-- ${action}${ruleList} --}}` : `{{! ${action}${ruleList} }}`;
 }
 
-function computeLine(text, offset) {
-  let line = 1;
-  for (let i = 0; i < offset && i < text.length; i++) {
-    if (text.charCodeAt(i) === 10) line++;
-  }
-  return line;
+const j = z.withParser(emberParser);
+
+function parseOptionsFor(filePath) {
+  return filePath.endsWith('.hbs') ? { filePath, templateOnly: true } : { filePath };
 }
 
-function transform(source, { knownRules } = {}) {
+export function transform(source, { knownRules, filePath = 'input.gjs' } = {}) {
   const warnings = [];
-  const blockRanges = []; // [start, end) — used to suppress SIMPLE matches nested inside BLOCK bodies
-  const changes = [];
 
-  for (const m of source.matchAll(BLOCK_REGEX)) {
-    const start = m.index;
-    const end = start + m[0].length;
-    blockRanges.push([start, end]);
-    const line = computeLine(source, start);
-    const rewritten = rewriteDirective(m[1], 'block', knownRules, (w) =>
-      warnings.push(`line ${line}: ${w}`)
-    );
-    if (rewritten != null) {
-      changes.push({ start, end, replacement: rewritten });
-    }
+  let root;
+  try {
+    root = j(source, parseOptionsFor(filePath));
+  } catch (err) {
+    throw new Error(`${filePath}: parse error — ${err.message}`);
   }
 
-  for (const m of source.matchAll(SIMPLE_REGEX)) {
-    const start = m.index;
-    // Skip SIMPLE matches that fall inside a BLOCK comment body — e.g. text
-    // like `{{! template-lint-... }}` accidentally appearing inside a
-    // `{{!-- ... --}}` block would otherwise be rewritten.
-    if (blockRanges.some(([bs, be]) => start >= bs && start < be)) continue;
-    const end = start + m[0].length;
-    const line = computeLine(source, start);
-    const rewritten = rewriteDirective(m[1], 'simple', knownRules, (w) =>
-      warnings.push(`line ${line}: ${w}`)
-    );
-    if (rewritten != null) {
-      changes.push({ start, end, replacement: rewritten });
-    }
-  }
+  // Dedupe by `node.start`. Workaround for HBS where templateOnly parsing
+  // currently exposes each comment twice (once in the body tree, once in a
+  // parallel `comments` array). Without this dedupe, two `path.replace` calls
+  // target the same source range and zmod rejects the overlapping patches.
+  const seenStarts = new Set();
+  let changedCount = 0;
 
-  changes.sort((a, b) => b.start - a.start);
-  let output = source;
-  for (const c of changes) {
-    output = output.slice(0, c.start) + c.replacement + output.slice(c.end);
-  }
+  root.find('GlimmerMustacheCommentStatement').forEach((p) => {
+    if (seenStarts.has(p.node.start)) return;
+    seenStarts.add(p.node.start);
 
-  return { output, warnings, changed: changes.length > 0 };
+    const line = p.node.loc && p.node.loc.start ? p.node.loc.start.line : null;
+    const emit = (msg) => warnings.push(line != null ? `line ${line}: ${msg}` : msg);
+
+    const result = analyzeDirective(p.node.value, knownRules, emit);
+    if (!result) return;
+
+    const replacement = formatComment(result.action, result.rules, p.node.longForm);
+    p.replace(replacement);
+    changedCount++;
+  });
+
+  const output = changedCount > 0 ? root.toSource() : source;
+  return { output, warnings, changed: changedCount > 0 };
 }
 
-function loadKnownRules() {
+export function loadKnownRules() {
   const rulesDir = path.join(__dirname, '..', 'lib', 'rules');
   return new Set(
     fs
@@ -146,8 +137,6 @@ function loadKnownRules() {
       .map((f) => f.slice(0, -3))
   );
 }
-
-module.exports = { transform, parseRules, loadKnownRules };
 
 // Directories we never want to walk into when a directory is passed as input —
 // running the codemod from a repo root should not descend into vendored
@@ -175,14 +164,15 @@ function collectFiles(inputPath) {
   return result;
 }
 
-if (require.main === module) {
+const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
+if (isMainModule) {
   const args = process.argv.slice(2);
   const write = args.includes('--write');
   const inputs = args.filter((a) => !a.startsWith('--'));
 
   if (inputs.length === 0) {
     console.error(
-      'usage: migrate-template-lint-directives.js [--write] <files-or-dirs>...\n' +
+      'usage: migrate-template-lint-directives.mjs [--write] <files-or-dirs>...\n' +
         '  Without --write, performs a dry run and reports planned changes.\n' +
         `  Directory walk excludes: ${[...EXCLUDED_DIRS].join(', ')}.`
     );
@@ -216,7 +206,15 @@ if (require.main === module) {
       process.exitCode = 1;
       continue;
     }
-    const { output, warnings, changed } = transform(src, { knownRules });
+    let result;
+    try {
+      result = transform(src, { knownRules, filePath: file });
+    } catch (err) {
+      console.error(err.message);
+      process.exitCode = 1;
+      continue;
+    }
+    const { output, warnings, changed } = result;
     if (changed) {
       changedFiles++;
       if (write) {

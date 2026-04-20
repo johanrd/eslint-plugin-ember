@@ -183,10 +183,10 @@ comments inside `.hbs`, `.gjs`, and `.gts` files.
 
 ```sh
 # Dry run — reports planned changes and warnings, writes nothing.
-node node_modules/eslint-plugin-ember/scripts/migrate-template-lint-directives.js app/ tests/
+node node_modules/eslint-plugin-ember/scripts/migrate-template-lint-directives.mjs app/ tests/
 
 # Apply.
-node node_modules/eslint-plugin-ember/scripts/migrate-template-lint-directives.js --write app/ tests/
+node node_modules/eslint-plugin-ember/scripts/migrate-template-lint-directives.mjs --write app/ tests/
 ```
 
 Example rewrites:
