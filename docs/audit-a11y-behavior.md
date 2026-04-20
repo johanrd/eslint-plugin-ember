@@ -82,13 +82,48 @@ Sampled jsx-a11y tests (`__tests__/src/rules/aria-props-test.js`) don't suggest 
 
 ---
 
+---
+
+## Concept 2 — `alt-text`
+
+**Our rule:** `template-require-valid-alt-text`
+**Peer rules:** jsx-a11y/`alt-text`, vue-a11y/`alt-text`, angular/`alt-text`, lit-a11y/`alt-text` (+ `obj-alt`)
+**Fixture:** `tests/audit/alt-text/peer-parity.js`
+
+### Divergences
+
+1. **`<img>` with `aria-label`/`aria-labelledby` but no `alt`**
+   - jsx-a11y, vue-a11y: VALID — accept `aria-label`/`aria-labelledby` as alternative text sources.
+   - **Ours: INVALID** — strictly require `alt` attribute on `<img>`.
+   - Severity: **arguable**. HTML spec requires `alt` on `<img>`; WAI-ARIA accepts aria-label/labelledby as accessible-name sources. Two spec bodies disagree. Our stance aligns with HTML-strict.
+   - Note: this is defensible either way. Document, don't silently change.
+
+2. **Non-empty `alt` with `role="presentation"` / `role="none"` on `<img>`**
+   - jsx-a11y: VALID — accepts `<img alt="this is lit..." role="presentation" />`.
+   - **Ours: INVALID** — our `imgRolePresentation` check: if the image is decorative (role=none/presentation) the alt should be empty.
+   - Severity: we're spec-stricter; jsx-a11y is lenient here. Our behavior is more correct per WAI-ARIA. Keep as-is.
+
+3. **Empty-string `aria-label`/`aria-labelledby`** on `<object>`, `<area>`, `<input type="image">`
+   - jsx-a11y: INVALID — empty attribute provides no accessible name.
+   - **Ours: VALID** — we check attribute PRESENCE only, not value.
+   - Severity: **false negative**. `aria-label=""` is indistinguishable from no accessible name.
+   - Fix: for the aria-label/labelledby fallback path, check that the value has at least one non-whitespace character. Same fix shape for `alt=""` on `<input type="image">` / `<area>` — but note that `alt=""` on `<img>` is semantically "decorative" and must remain valid.
+
+### Recommended follow-ups
+
+- **Fix divergence #3** (empty aria-label treated as valid) — small targeted PR, no spec ambiguity.
+- **Defer #1** (img aria-label fallback) — intentional strictness, document.
+- **Defer #2** (non-empty alt with role=presentation) — our behavior is more correct per WAI-ARIA.
+
+---
+
 ## Progress tracker
 
 | Concept | Status | Fixture | Divergences found |
 |---|---|---|---|
 | aria-role | ✅ complete | aria-role/peer-parity.js | 5 (2 bugs, 1 intentional, 2 minor) |
 | aria-props | ✅ surveyed — no action | — | 0 |
-| alt-text | ⏳ pending | — | — |
+| alt-text | ✅ complete | alt-text/peer-parity.js | 3 (1 bug, 2 intentional) |
 | aria-unsupported-elements | ⏳ pending | — | — |
 | no-redundant-roles | ⏳ pending | — | — |
 | role-has-required-aria | ⏳ pending | — | — |
