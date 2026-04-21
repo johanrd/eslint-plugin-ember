@@ -44,24 +44,6 @@ ruleTester.run('audit:no-aria-hidden-on-focusable (gts)', rule, {
     // so it's still valid.
     '<template><div {{on "click" this.handler}} aria-hidden="true"></div></template>',
 
-    // === Upstream parity with vue-a11y (valid in both) ===
-    // vue-a11y: valid — descendant focusable with its own tabindex="-1" is
-    // "escorted out" of the tab order. Our rule only inspects the element
-    // that carries aria-hidden; we agree by not descending.
-    `<template>
-      <div aria-hidden="true">
-        <button tabindex="-1">Some text</button>
-      </div>
-    </template>`,
-
-    // vue-a11y: valid — `<a href tabindex="-1">` is escorted out of tab order.
-    // We don't flag because the aria-hidden is on the non-focusable <div>.
-    `<template>
-      <div aria-hidden="true">
-        <a href="#" tabindex="-1">Link</a>
-      </div>
-    </template>`,
-
     // vue-a11y: valid — no aria-hidden anywhere.
     `<template>
       <div>
@@ -131,6 +113,18 @@ ruleTester.run('audit:no-aria-hidden-on-focusable (gts)', rule, {
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
     },
 
+    // === Upstream parity with vue-a11y descendant-focusable check (G5.1) ===
+    // vue-a11y: INVALID when aria-hidden is on an ancestor and a focusable
+    //   descendant exists. Our rule now matches this via hasFocusableDescendant.
+    //   Per WAI-ARIA 1.2 §aria-hidden "may receive focus", a focusable
+    //   descendant beneath an aria-hidden ancestor is keyboard-reachable while
+    //   hidden from AT — a keyboard trap.
+    {
+      code: '<template><div aria-hidden="true"><button>Submit</button></div></template>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
+
     // === DIVERGENCE — `tabindex="-1"` on an inherently focusable element ===
     // This is the load-bearing, intentional divergence that PR #19 encodes.
     // jsx-a11y: VALID — `<button aria-hidden="true" tabIndex="-1" />` is
@@ -155,6 +149,30 @@ ruleTester.run('audit:no-aria-hidden-on-focusable (gts)', rule, {
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
     },
+
+    // === DIVERGENCE (extended by G5.1) — tabindex="-1" on a DESCENDANT ===
+    // Same rationale as above, applied through hasFocusableDescendant: our
+    // `isFocusable` treats any tabindex (including "-1") as programmatically
+    // focusable. vue-a11y considers these VALID (descendant is "escorted out"
+    // of tab order). We flag.
+    {
+      code: `<template>
+      <div aria-hidden="true">
+        <button tabindex="-1">Some text</button>
+      </div>
+    </template>`,
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
+    {
+      code: `<template>
+      <div aria-hidden="true">
+        <a href="#" tabindex="-1">Link</a>
+      </div>
+    </template>`,
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
   ],
 });
 
@@ -168,31 +186,17 @@ ruleTester.run('audit:no-aria-hidden-on-focusable (gts)', rule, {
 // jsx-a11y: has no explicit case for this. Our rule special-cases
 //   `<input type="hidden">` as non-focusable. Captured in main rule tests.
 
-// === DIVERGENCE — vue-a11y descendant-focusable check ===
+// === PARITY — vue-a11y descendant-focusable check (G5.1, PR #19 follow-up) ===
 // vue-a11y: INVALID when aria-hidden is on an ancestor and a focusable
 //   descendant exists:
 //     `<div aria-hidden="true"><button>Submit</button></div>`  → flagged
 //   Its rule descends into children and fires on the aria-hidden ancestor
 //   if any descendant is focusable.
-// Our rule: VALID — we only inspect the element that carries aria-hidden.
-//   A div is not focusable, so we do not flag. This is a deliberate scope
-//   decision (match jsx-a11y) and leaves vue-a11y's descendant-check behavior
-//   as a capture-only difference. The PR's doc should note that users relying
-//   on vue-a11y's broader semantic should pair this rule with an additional
-//   check or use `aria-hidden` sparingly on wrappers.
-//
-// Captured below as valid cases (reflecting OUR non-flagging behavior).
-ruleTester.run('audit:no-aria-hidden-on-focusable descendant-only (gts)', rule, {
-  valid: [
-    // vue-a11y flags this; we don't.
-    `<template>
-      <div aria-hidden="true">
-        <button>Submit</button>
-      </div>
-    </template>`,
-  ],
-  invalid: [],
-});
+// Our rule: now INVALID — matches vue-a11y. Per WAI-ARIA 1.2 §aria-hidden
+//   "may receive focus" we flag via `hasFocusableDescendant` under the
+//   `noAriaHiddenOnAncestorOfFocusable` messageId. The parity case is in the
+//   invalid[] block above. Component/dynamic descendants remain opaque
+//   (no-FP bias).
 
 // === AUDIT-SKIP — curly-literal aria-hidden value forms ===
 // jsx-a11y: tests use string-literal `aria-hidden="true"`. It also recognizes
@@ -215,13 +219,6 @@ hbsRuleTester.run('audit:no-aria-hidden-on-focusable (hbs)', rule, {
     '<a aria-hidden="false" href="#"></a>',
     '<button></button>',
     '<a href="/"></a>',
-
-    // vue-a11y parity — descendant has its own tabindex="-1" opt-out.
-    '<div aria-hidden="true"><button tabindex="-1">Some text</button></div>',
-    '<div aria-hidden="true"><a href="#" tabindex="-1">Link</a></div>',
-
-    // DIVERGENCE captured in hbs — we don't descend (vue-a11y does).
-    '<div aria-hidden="true"><button>Submit</button></div>',
   ],
   invalid: [
     {
@@ -265,6 +262,23 @@ hbsRuleTester.run('audit:no-aria-hidden-on-focusable (hbs)', rule, {
       code: '<button tabindex="-1" aria-hidden="true">Press</button>',
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
+    },
+    // G5.1 parity — aria-hidden ancestor with focusable descendant.
+    {
+      code: '<div aria-hidden="true"><button>Submit</button></div>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
+    // G5.1 — DIVERGENCE extended: descendant with tabindex="-1".
+    {
+      code: '<div aria-hidden="true"><button tabindex="-1">Some text</button></div>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
+    {
+      code: '<div aria-hidden="true"><a href="#" tabindex="-1">Link</a></div>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
     },
   ],
 });

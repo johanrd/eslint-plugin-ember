@@ -31,6 +31,22 @@ ruleTester.run('template-no-aria-hidden-on-focusable', rule, {
 
     // Components — we don't know if they render a focusable element.
     '<template><CustomBtn aria-hidden="true" /></template>',
+
+    // Descendant-focusable check — valid cases.
+    // No focusable descendant.
+    '<template><div aria-hidden="true"><span>Just text</span></div></template>',
+    // Component descendants are opaque — conservatively not flagged.
+    '<template><div aria-hidden="true"><Button>X</Button></div></template>',
+    // No focusable descendants (alt-less img is decorative, not focusable).
+    '<template><div aria-hidden="true"><img alt="static" /></div></template>',
+    // <input type="hidden"> is non-focusable per isFocusable.
+    '<template><div aria-hidden="true"><input type="hidden" /></div></template>',
+    // Dynamic mustache descendants are not inspected.
+    '<template><div aria-hidden="true">{{this.label}}</div></template>',
+    // `@arg`-prefixed tag is opaque.
+    '<template><div aria-hidden="true"><@thing /></div></template>',
+    // `this.`-prefixed tag is opaque.
+    '<template><div aria-hidden="true"><this.Item /></div></template>',
   ],
   invalid: [
     // Native interactive elements.
@@ -89,6 +105,46 @@ ruleTester.run('template-no-aria-hidden-on-focusable', rule, {
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
     },
+
+    // Descendant-focusable check (G5.1). Per WAI-ARIA 1.2 §aria-hidden
+    // "may receive focus" — focusable descendants are keyboard-reachable
+    // under an aria-hidden ancestor, creating a keyboard trap.
+    {
+      // Classic modal-backdrop trap.
+      code: '<template><div aria-hidden="true"><button>Close</button></div></template>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
+    {
+      // Deeper descendant.
+      code: '<template><div aria-hidden="true"><span><button>Deep</button></span></div></template>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
+    {
+      code: '<template><div aria-hidden="true"><a href="/x">Link</a></div></template>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
+    {
+      code: '<template><div aria-hidden="true"><input /></div></template>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
+    {
+      // Depth check — focusable descendant two levels deep.
+      // (Our isFocusable doesn't treat <video controls> as focusable because
+      // it's not in INHERENTLY_FOCUSABLE_TAGS; use <textarea> instead.)
+      code: '<template><section aria-hidden="true"><div><textarea></textarea></div></section></template>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
+    {
+      // tabindex on a descendant makes it focusable.
+      code: '<template><div aria-hidden="true"><span tabindex="0">x</span></div></template>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
   ],
 });
 
@@ -103,6 +159,10 @@ hbsRuleTester.run('template-no-aria-hidden-on-focusable', rule, {
     '<button>Click me</button>',
     '<input type="hidden" aria-hidden="true" />',
     '<CustomBtn aria-hidden="true" />',
+    // Descendant-focusable — non-focusable child.
+    '<div aria-hidden="true"><span>Just text</span></div>',
+    // Component descendant is opaque.
+    '<div aria-hidden="true"><Button>X</Button></div>',
   ],
   invalid: [
     {
@@ -114,6 +174,17 @@ hbsRuleTester.run('template-no-aria-hidden-on-focusable', rule, {
       code: '<div tabindex="0" aria-hidden="true"></div>',
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
+    },
+    // Descendant-focusable check (G5.1).
+    {
+      code: '<div aria-hidden="true"><button>Close</button></div>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
+    {
+      code: '<section aria-hidden="true"><div><a href="/x">Link</a></div></section>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
     },
   ],
 });
