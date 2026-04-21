@@ -26,8 +26,15 @@ ruleTester.run('template-no-role-presentation-on-focusable', rule, {
     // <a> without href isn't focusable.
     '<template><a role="presentation">Not a link</a></template>',
 
-    // Components — rule skips.
+    // <audio>/<video> without `controls` aren't focusable — no keyboard UI.
+    '<template><video role="presentation"></video></template>',
+    '<template><audio role="presentation"></audio></template>',
+
+    // Components — rule skips (isComponentInvocation).
     '<template><CustomBtn role="presentation" /></template>',
+    '<template><@slot role="presentation" /></template>',
+    '<template><this.widget role="presentation" /></template>',
+    '<template><foo.bar role="presentation" /></template>',
 
     // No role at all.
     '<template><button></button></template>',
@@ -64,6 +71,26 @@ ruleTester.run('template-no-role-presentation-on-focusable', rule, {
       output: null,
       errors: [{ messageId: 'invalidPresentation' }],
     },
+    // <video controls> / <audio controls> — focusable per HTML-AAM / browser
+    // reality (keyboard-operable transport controls), so role="presentation"
+    // on them is a semantic conflict. Added after migrating to the shared
+    // isNativeInteractive util (previously not flagged).
+    {
+      code: '<template><video controls role="presentation"></video></template>',
+      output: null,
+      errors: [{ messageId: 'invalidPresentation' }],
+    },
+    {
+      code: '<template><audio controls role="none"></audio></template>',
+      output: null,
+      errors: [{ messageId: 'invalidPresentation' }],
+    },
+    // <area href> — same conditional-interactive rule as <a href>.
+    {
+      code: '<template><area href="/x" role="presentation" /></template>',
+      output: null,
+      errors: [{ messageId: 'invalidPresentation' }],
+    },
   ],
 });
 
@@ -77,6 +104,8 @@ hbsRuleTester.run('template-no-role-presentation-on-focusable', rule, {
     '<div role="presentation"></div>',
     '<input type="hidden" role="presentation" />',
     '<CustomBtn role="presentation" />',
+    // <video> / <audio> without controls aren't focusable.
+    '<video role="presentation"></video>',
   ],
   invalid: [
     {
@@ -86,6 +115,11 @@ hbsRuleTester.run('template-no-role-presentation-on-focusable', rule, {
     },
     {
       code: '<div tabindex="0" role="none"></div>',
+      output: null,
+      errors: [{ messageId: 'invalidPresentation' }],
+    },
+    {
+      code: '<video controls role="presentation"></video>',
       output: null,
       errors: [{ messageId: 'invalidPresentation' }],
     },
