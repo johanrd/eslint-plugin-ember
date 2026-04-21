@@ -111,6 +111,22 @@ ruleTester.run('template-no-invalid-interactive', rule, {
     // Their a11y contract is author-defined; ESLint can't introspect.
     '<template><my-element onclick={{this.handler}}></my-element></template>',
     '<template><x-foo {{on "click" this.handler}}></x-foo></template>',
+
+    // Non-interactive escape hatches — `role="presentation"` / `role="none"`
+    // / `aria-hidden` opt the element out of interactive-role semantics.
+    // Matches jsx-a11y (`hasPresentationRole`, aria-hidden handling in
+    // `isInteractiveElement`) and vuejs-accessibility.
+    '<template><div role="presentation" onclick={{this.h}}></div></template>',
+    '<template><div role="none" onclick={{this.h}}></div></template>',
+    '<template><div role="presentation" {{on "click" this.h}}></div></template>',
+    '<template><div role="none" {{action "foo"}}></div></template>',
+    '<template><div aria-hidden="true" onclick={{this.h}}></div></template>',
+    '<template><div aria-hidden onclick={{this.h}}></div></template>',
+    '<template><div aria-hidden={{true}} onclick={{this.h}}></div></template>',
+    '<template><div aria-hidden="true" {{on "click" this.h}}></div></template>',
+    // Case-insensitive / whitespace tolerance on role values.
+    '<template><div role="  Presentation  " onclick={{this.h}}></div></template>',
+    '<template><div role="NONE" onclick={{this.h}}></div></template>',
   ],
 
   invalid: [
@@ -211,6 +227,18 @@ ruleTester.run('template-no-invalid-interactive', rule, {
           data: { tagName: 'a', handler: 'onclick' },
         },
       ],
+    },
+    {
+      // `aria-hidden="false"` does NOT opt out — element is still exposed.
+      code: '<template><div aria-hidden="false" onclick={{this.h}}></div></template>',
+      output: null,
+      errors: [{ messageId: 'noInvalidInteractive' }],
+    },
+    {
+      // `role="note"` is neither presentation/none nor an interactive role.
+      code: '<template><div role="note" onclick={{this.h}}></div></template>',
+      output: null,
+      errors: [{ messageId: 'noInvalidInteractive' }],
     },
   ],
 });
