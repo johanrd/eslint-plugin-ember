@@ -20,6 +20,13 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     '<template><input tabindex="-1" /></template>',
     '<template><select tabindex="0"></select></template>',
 
+    // <audio>/<video> with `controls` render an interactive UI.
+    '<template><audio controls tabindex="0"></audio></template>',
+    '<template><video controls tabindex="0"></video></template>',
+
+    // <object> is a widget per axobject-query — allow tabindex.
+    '<template><object tabindex="0"></object></template>',
+
     // Non-interactive element made interactive via role.
     '<template><div role="button" tabindex="0"></div></template>',
     '<template><div role="checkbox" tabindex="0" aria-checked="false"></div></template>',
@@ -67,6 +74,17 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     // <a> without href isn't interactive.
     {
       code: '<template><a tabindex="0">Not a link</a></template>',
+      output: null,
+      errors: [{ messageId: 'noNonInteractiveTabindex' }],
+    },
+    // <audio>/<video> without `controls` have no interactive UI — still flag.
+    {
+      code: '<template><audio tabindex="0"></audio></template>',
+      output: null,
+      errors: [{ messageId: 'noNonInteractiveTabindex' }],
+    },
+    {
+      code: '<template><video tabindex="0"></video></template>',
       output: null,
       errors: [{ messageId: 'noNonInteractiveTabindex' }],
     },
