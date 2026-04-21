@@ -18,17 +18,18 @@
 // Rule under test:
 //   - lib/rules/template-no-noninteractive-element-to-interactive-role.js
 //     (feat/template-no-noninteractive-to-interactive-role, PR #21).
-//     Non-interactive tag set is derived from axobject-query: any element
-//     whose AXObject mapping is exclusively {window, structure} with no
-//     attribute constraints. Interactive role set is shared with the sibling
-//     rule via lib/utils/interactive-roles.js (refactored in PR #27 to
-//     descend from the `widget` superclass in aria-query, plus `toolbar`).
+//     Non-interactive tag set is derived by unioning aria-query's
+//     `elementRoles` (tags mapping only to non-interactive, non-`generic`
+//     roles) with axobject-query's `elementAXObjects` (unconstrained tags
+//     whose AXObjects are exclusively `window`/`structure`). `header` is
+//     excluded because its role depends on ancestry. Interactive role set
+//     is shared with the sibling rule via lib/utils/interactive-roles.js
+//     (refactored in PR #27 to descend from the `widget` superclass in
+//     aria-query, plus `toolbar`). This is the same approach jsx-a11y takes
+//     in src/util/isNonInteractiveElement.js.
 //
-// jsx-a11y, by contrast, uses a manually curated element→role map
-// (src/util/implicitRoles + nonInteractiveMap). The two derivations diverge
-// on a number of tags; those divergences are captured below. jsx-a11y also
-// ships :recommended and :strict variants — our rule has no options and
-// behaves close to jsx-a11y :strict (always flags everything), with the
+// jsx-a11y ships :recommended and :strict variants — our rule has no options
+// and behaves close to jsx-a11y :strict (always flags everything), with the
 // exceptions documented below.
 
 'use strict';
@@ -242,50 +243,12 @@ ruleTester.run('audit:no-noninteractive-element-to-interactive-role (gts)', rule
     //   `<h1 role="BUTTON" />` is FLAGGED by our rule. Captured in invalid
     //   list — this is a divergence (stricter than jsx-a11y).
 
-    // === DIVERGENCE — section has no implicit role per jsx-a11y's map ===
-    // jsx-a11y: `<section role="button" aria-label="...">` is INVALID in jsx-a11y
-    //   (section is in nonInteractiveMap). Test exists in neverValid.
-    // Ours: `section` is NOT in our NON_INTERACTIVE_TAGS. axobject-query's
-    //   `<section>` mapping is attribute-conditional (becomes `region` only with
-    //   an accessible name), so our unconstrained-attributes filter excludes it.
-    //   FALSE NEGATIVE. Captured below.
-    '<template><section role="button" aria-label="Aardvark"></section></template>',
-
-    // === DIVERGENCE — misc tags jsx-a11y flags that we don't ===
-    // axobject-query assigns these tags attribute-constrained AXObjects, so
-    // our "unconstrained non-interactive" filter drops them. jsx-a11y's
-    // nonInteractiveMap is hand-curated and includes them. Our rule does NOT
-    // flag the following; jsx-a11y DOES:
-    //
-    //   address, aside, code, del, em, fieldset, hr, html, ins, optgroup,
-    //   output, strong, sub, sup, tbody, tfoot, thead
-    //
-    // These are FALSE NEGATIVES (we are looser than jsx-a11y).
-    '<template><address role="button"></address></template>',
-    '<template><aside role="button"></aside></template>',
-    '<template><code role="button"></code></template>',
-    '<template><del role="button"></del></template>',
-    '<template><em role="button"></em></template>',
-    '<template><fieldset role="button"></fieldset></template>',
-    '<template><hr role="button" /></template>',
-    '<template><html role="button"></html></template>',
-    '<template><ins role="button"></ins></template>',
-    '<template><optgroup role="button"></optgroup></template>',
-    '<template><output role="button"></output></template>',
-    '<template><strong role="button"></strong></template>',
-    '<template><sub role="button"></sub></template>',
-    '<template><sup role="button"></sup></template>',
-    '<template><tbody role="button"></tbody></template>',
-    '<template><tfoot role="button"></tfoot></template>',
-    '<template><thead role="button"></thead></template>',
-
-    // jsx-a11y flags <dd role="menuitem"> but we flag also (parity, in invalid).
-    // jsx-a11y flags the following but we DO NOT (same false-negative family):
-    '<template><fieldset role="menuitem"></fieldset></template>',
-    '<template><hr role="menuitem" /></template>',
-    '<template><tbody role="menuitem"></tbody></template>',
-    '<template><tfoot role="menuitem"></tfoot></template>',
-    '<template><thead role="menuitem"></thead></template>',
+    // Previously-documented FALSE NEGATIVES for `section`, `address`, `aside`,
+    // `code`, `del`, `em`, `fieldset`, `hr`, `html`, `ins`, `optgroup`,
+    // `output`, `strong`, `sub`, `sup`, `tbody`, `tfoot`, `thead` were
+    // resolved by augmenting the tag derivation with aria-query's elementRoles
+    // (jsx-a11y does the same in isNonInteractiveElement). Those cases have
+    // moved to the invalid list below.
   ],
 
   invalid: [
@@ -575,6 +538,128 @@ ruleTester.run('audit:no-noninteractive-element-to-interactive-role (gts)', rule
       errors: [{ messageId: 'mismatch' }],
     },
 
+    // === Upstream parity — HTML-AAM non-interactive tags captured via the
+    // aria-query `elementRoles` augmentation (section → region, fieldset →
+    // group, code/em/strong → code/emphasis/strong, tbody/tfoot/thead →
+    // rowgroup, etc.). Prior to the elementRoles derivation these were false
+    // negatives relative to jsx-a11y; the rule now flags them. ===
+    {
+      code: '<template><section role="button" aria-label="Aardvark"></section></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><address role="button"></address></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><aside role="button"></aside></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><code role="button"></code></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><del role="button"></del></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><em role="button"></em></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><fieldset role="button"></fieldset></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><hr role="button" /></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><html role="button"></html></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><ins role="button"></ins></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><optgroup role="button"></optgroup></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><output role="button"></output></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><strong role="button"></strong></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><sub role="button"></sub></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><sup role="button"></sup></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><tbody role="button"></tbody></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><tfoot role="button"></tfoot></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><thead role="button"></thead></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    // jsx-a11y also flags role="menuitem" on several of the above.
+    {
+      code: '<template><fieldset role="menuitem"></fieldset></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><hr role="menuitem" /></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><tbody role="menuitem"></tbody></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><tfoot role="menuitem"></tfoot></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><thead role="menuitem"></thead></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+
     // === DIVERGENCE — jsx-a11y :recommended config exceptions ===
     // jsx-a11y :recommended has an allowedInvalidRoles config so the following
     //   all pass :recommended but FAIL :strict:
@@ -779,26 +864,6 @@ hbsRuleTester.run('audit:no-noninteractive-element-to-interactive-role (hbs)', r
     '<h1 role={{this.role}}></h1>',
     // Empty role — ours skip; jsx-a11y doesn't cover.
     '<h1 role=""></h1>',
-
-    // DIVERGENCE: jsx-a11y flags these (per nonInteractiveMap); ours do not.
-    '<section role="button" aria-label="A"></section>',
-    '<address role="button"></address>',
-    '<aside role="button"></aside>',
-    '<fieldset role="button"></fieldset>',
-    '<code role="button"></code>',
-    '<em role="button"></em>',
-    '<strong role="button"></strong>',
-    '<tbody role="button"></tbody>',
-    '<tfoot role="button"></tfoot>',
-    '<thead role="button"></thead>',
-    '<hr role="button" />',
-    '<html role="button"></html>',
-    '<del role="button"></del>',
-    '<ins role="button"></ins>',
-    '<optgroup role="button"></optgroup>',
-    '<output role="button"></output>',
-    '<sub role="button"></sub>',
-    '<sup role="button"></sup>',
   ],
   invalid: [
     // Upstream parity — non-interactive + interactive role.
@@ -829,6 +894,39 @@ hbsRuleTester.run('audit:no-noninteractive-element-to-interactive-role (hbs)', r
     },
     {
       code: '<p role="button"></p>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+
+    // Upstream parity — HTML-AAM non-interactive tags picked up via the
+    // aria-query elementRoles augmentation.
+    {
+      code: '<section role="button" aria-label="A"></section>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<fieldset role="button"></fieldset>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<aside role="button"></aside>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<hr role="button" />',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<strong role="button"></strong>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<tbody role="button"></tbody>',
       output: null,
       errors: [{ messageId: 'mismatch' }],
     },

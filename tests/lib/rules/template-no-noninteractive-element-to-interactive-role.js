@@ -78,6 +78,40 @@ ruleTester.run('template-no-noninteractive-element-to-interactive-role', rule, {
       output: null,
       errors: [{ messageId: 'mismatch' }],
     },
+
+    // HTML-AAM-defined non-interactive tags captured via aria-query's
+    // elementRoles (augmenting the axobject-query derivation). See rule
+    // source for the two-layer derivation rationale.
+    {
+      code: '<template><section role="button" aria-label="Aardvark"></section></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><fieldset role="checkbox"></fieldset></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><aside role="tab">Aside</aside></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><hr role="button" /></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><strong role="menuitem">Bold</strong></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><tbody role="button"></tbody></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
   ],
 });
 
