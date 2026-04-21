@@ -74,8 +74,7 @@ ruleTester.run('audit:no-role-presentation-on-focusable (gts)', rule, {
     //   programmatically focusable (focus() / sequential-focus-exclusion only
     //   removes it from tab order). The element can still receive focus, at
     //   which point it's announced by AT. Flagging is intentional.
-    //   Same tabindex stance taken by `template-no-aria-hidden-on-focusable`
-    //   (#19) — see PR #22 body for rationale.
+    //   Same tabindex stance as `template-no-aria-hidden-on-focusable`.
     {
       code: '<template><button tabindex="-1" role="presentation">Press</button></template>',
       output: null,

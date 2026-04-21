@@ -73,8 +73,7 @@ ruleTester.run('template-no-role-presentation-on-focusable', rule, {
     },
     // <video controls> / <audio controls> — focusable per HTML-AAM / browser
     // reality (keyboard-operable transport controls), so role="presentation"
-    // on them is a semantic conflict. Added after migrating to the shared
-    // isNativeInteractive util (previously not flagged).
+    // on them is a semantic conflict.
     {
       code: '<template><video controls role="presentation"></video></template>',
       output: null,
