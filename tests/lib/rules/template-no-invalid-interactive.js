@@ -217,8 +217,9 @@ ruleTester.run('template-no-invalid-interactive', rule, {
       ],
     },
     {
-      // role="tooltip" is document-structure per WAI-ARIA 1.2 §5.3.3 — NOT
-      // a widget, so a handler on it is as invalid as a handler on a bare div.
+      // `tooltip` is a Document Structure role per WAI-ARIA 1.2 §5.3.3, not a
+      // widget. Click handlers on a tooltip are therefore an invalid
+      // interactive handler on a non-interactive element.
       filename: 'test.gjs',
       code: '<template><div role="tooltip" onclick={{this.show}}>Tip</div></template>',
       output: null,
