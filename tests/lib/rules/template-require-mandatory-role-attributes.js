@@ -25,6 +25,11 @@ ruleTester.run('template-require-mandatory-role-attributes', rule, {
     '<template>{{foo-component role="button"}}</template>',
     '<template>{{foo-component role="unknown"}}</template>',
     '<template>{{foo-component role=role}}</template>',
+
+    // Case-insensitive role matching — ARIA role tokens compare as ASCII-case-insensitive.
+    '<template><div role="COMBOBOX" aria-expanded="false" aria-controls="ctrl" /></template>',
+    // Role fallback list — primary role's required attributes are satisfied.
+    '<template><div role="combobox listbox" aria-expanded="false" aria-controls="ctrl" /></template>',
   ],
 
   invalid: [
@@ -74,6 +79,27 @@ ruleTester.run('template-require-mandatory-role-attributes', rule, {
       code: '<template>{{foo role="checkbox"}}</template>',
       output: null,
       errors: [{ message: 'The attribute aria-checked is required by the role checkbox' }],
+    },
+
+    // Case-insensitivity surfaces previously-unflagged mistakes.
+    {
+      code: '<template><div role="COMBOBOX"></div></template>',
+      output: null,
+      errors: [
+        {
+          message: 'The attributes aria-controls, aria-expanded are required by the role combobox',
+        },
+      ],
+    },
+    // Role-fallback list: when the primary role is missing required props, flag it.
+    {
+      code: '<template><div role="combobox listbox"></div></template>',
+      output: null,
+      errors: [
+        {
+          message: 'The attributes aria-controls, aria-expanded are required by the role combobox',
+        },
+      ],
     },
   ],
 });
