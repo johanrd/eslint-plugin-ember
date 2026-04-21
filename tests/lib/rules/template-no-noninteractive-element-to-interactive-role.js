@@ -15,10 +15,10 @@ ruleTester.run('template-no-noninteractive-element-to-interactive-role', rule, {
     '<template><article role="article">Story</article></template>',
     '<template><ul role="list"></ul></template>',
 
-    // <div>/<span> are "generic" — rule intentionally doesn't flag these.
+    // <div>/<span> are "generic" in ARIA 1.2 — axobject-query doesn't list
+    // them as non-interactive, so the rule doesn't flag them.
     '<template><div role="button" tabindex="0"></div></template>',
     '<template><span role="checkbox" aria-checked="false" tabindex="0"></span></template>',
-    '<template><p role="button">Click me</p></template>',
 
     // Interactive element with interactive role — not in scope.
     '<template><button role="menuitem">Item</button></template>',
@@ -62,6 +62,13 @@ ruleTester.run('template-no-noninteractive-element-to-interactive-role', rule, {
     },
     {
       code: '<template><form role="checkbox"></form></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      // <p> has role="paragraph" per HTML-AAM — flagging role="button" is
+      // correct. The <p> has no interactive behavior to back the role.
+      code: '<template><p role="button">Click me</p></template>',
       output: null,
       errors: [{ messageId: 'mismatch' }],
     },

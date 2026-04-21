@@ -8,9 +8,9 @@ Assigning an interactive role (`button`, `checkbox`, `menuitem`, ...) to an elem
 
 ## Scope
 
-This rule covers elements with **non-interactive ARIA semantics** per HTML-AAM: headings (`<h1>`–`<h6>`), landmarks (`<article>`, `<aside>`, `<nav>`, `<main>`, `<section>`, `<header>`, `<footer>`, `<address>`), text structure (`<figure>`, `<figcaption>`, `<blockquote>`), lists (`<ul>`, `<ol>`, `<li>`, `<dl>`, `<dt>`, `<dd>`), tables (`<table>`, `<tbody>`, `<tfoot>`, `<thead>`, `<tr>`, `<th>`, `<caption>`), forms (`<form>`, `<fieldset>`, `<legend>`), and `<img>`.
+The set of non-interactive elements is sourced from [`axobject-query`](https://github.com/A11yance/axobject-query) — the same AX-tree-derived data used by [`eslint-plugin-jsx-a11y`](https://github.com/jsx-eslint/eslint-plugin-jsx-a11y), [`@angular-eslint/eslint-plugin-template`](https://github.com/angular-eslint/angular-eslint), and others. It includes headings (`<h1>`–`<h6>`), landmarks (`<article>`, `<aside>`, `<nav>`, `<main>`, etc.), text structure (`<p>`, `<figure>`, `<blockquote>`, etc.), lists (`<ul>`, `<ol>`, `<li>`, `<dl>`, `<dt>`, `<dd>`), tables (`<table>`, `<tbody>`, `<tr>`, etc.), forms (`<form>`, `<fieldset>`, `<legend>`), `<img>`, and similar.
 
-`<div>`, `<span>`, and `<p>` are intentionally **not** covered — ARIA 1.2 assigns these the `generic` role, which has no inherent semantics to mismatch. If you use `<div role="button">`, other rules (`template-require-aria-activedescendant-tabindex`, the forthcoming `template-no-noninteractive-tabindex`) cover the related concerns.
+`<div>` and `<span>` are not covered — ARIA 1.2 assigns them the `generic` role with no inherent semantics to mismatch. `<div role="button">` is covered by the related [`template-require-aria-activedescendant-tabindex`](./template-require-aria-activedescendant-tabindex.md) and [`template-no-noninteractive-tabindex`](./template-no-noninteractive-tabindex.md) rules.
 
 ## Examples
 
@@ -23,6 +23,7 @@ This rule **forbids** the following:
   <li role="tab">Tab</li>
   <img role="link" src="/x.png" alt="link" />
   <form role="checkbox"></form>
+  <p role="button">Click me</p>
 </template>
 ```
 
@@ -34,7 +35,7 @@ This rule **allows** the following:
   <article role="article">Story</article>
   <ul role="list"></ul>
 
-  {{! <div>/<span>/<p> are "generic" — not covered by this rule }}
+  {{! <div>/<span> are "generic" — not covered by this rule }}
   <div role="button" tabindex="0"></div>
   <span role="checkbox" aria-checked="false" tabindex="0"></span>
 </template>
@@ -44,4 +45,5 @@ This rule **allows** the following:
 
 - [WAI-ARIA 1.2 — Role taxonomy](https://www.w3.org/TR/wai-aria-1.2/#roles_categorization)
 - [HTML-AAM — Element role mappings](https://www.w3.org/TR/html-aam-1.0/)
+- [`axobject-query`](https://github.com/A11yance/axobject-query) — the shared data package used by every major a11y ESLint plugin
 - [`no-noninteractive-element-to-interactive-role` — eslint-plugin-jsx-a11y](https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/blob/main/docs/rules/no-noninteractive-element-to-interactive-role.md)
