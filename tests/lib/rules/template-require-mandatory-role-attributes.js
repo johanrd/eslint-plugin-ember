@@ -34,6 +34,9 @@ ruleTester.run('template-require-mandatory-role-attributes', rule, {
     '<template><input type="radio" role="menuitemradio" /></template>',
     '<template><input type="radio" role="radio" /></template>',
     '<template><input type="checkbox" role="checkbox" /></template>',
+
+    // HTML `type` is ASCII case-insensitive; `Checkbox` must match `checkbox`.
+    '<template><input type="Checkbox" role="switch" /></template>',
   ],
 
   invalid: [
@@ -84,6 +87,34 @@ ruleTester.run('template-require-mandatory-role-attributes', rule, {
       output: null,
       errors: [{ message: 'The attribute aria-checked is required by the role checkbox' }],
     },
+
+    // Undocumented {input type, role} pairings are NOT exempted.
+    {
+      code: '<template><input type="checkbox" role="radio" /></template>',
+      output: null,
+      errors: [{ message: 'The attribute aria-checked is required by the role radio' }],
+    },
+    {
+      code: '<template><input type="radio" role="switch" /></template>',
+      output: null,
+      errors: [{ message: 'The attribute aria-checked is required by the role switch' }],
+    },
+    {
+      code: '<template><input type="radio" role="checkbox" /></template>',
+      output: null,
+      errors: [{ message: 'The attribute aria-checked is required by the role checkbox' }],
+    },
+    {
+      code: '<template><input type="text" role="switch" /></template>',
+      output: null,
+      errors: [{ message: 'The attribute aria-checked is required by the role switch' }],
+    },
+    {
+      // No `type` attribute; defaults to text.
+      code: '<template><input role="switch" /></template>',
+      output: null,
+      errors: [{ message: 'The attribute aria-checked is required by the role switch' }],
+    },
   ],
 });
 
@@ -121,6 +152,9 @@ hbsRuleTester.run('template-require-mandatory-role-attributes', rule, {
     '<input type="radio" role="menuitemradio" />',
     '<input type="radio" role="radio" />',
     '<input type="checkbox" role="checkbox" />',
+
+    // HTML `type` is ASCII case-insensitive; `Checkbox` must match `checkbox`.
+    '<input type="Checkbox" role="switch" />',
   ],
   invalid: [
     {
@@ -161,6 +195,34 @@ hbsRuleTester.run('template-require-mandatory-role-attributes', rule, {
       code: '{{foo role="checkbox"}}',
       output: null,
       errors: [{ message: 'The attribute aria-checked is required by the role checkbox' }],
+    },
+
+    // Undocumented {input type, role} pairings are NOT exempted.
+    {
+      code: '<input type="checkbox" role="radio" />',
+      output: null,
+      errors: [{ message: 'The attribute aria-checked is required by the role radio' }],
+    },
+    {
+      code: '<input type="radio" role="switch" />',
+      output: null,
+      errors: [{ message: 'The attribute aria-checked is required by the role switch' }],
+    },
+    {
+      code: '<input type="radio" role="checkbox" />',
+      output: null,
+      errors: [{ message: 'The attribute aria-checked is required by the role checkbox' }],
+    },
+    {
+      code: '<input type="text" role="switch" />',
+      output: null,
+      errors: [{ message: 'The attribute aria-checked is required by the role switch' }],
+    },
+    {
+      // No `type` attribute; defaults to text.
+      code: '<input role="switch" />',
+      output: null,
+      errors: [{ message: 'The attribute aria-checked is required by the role switch' }],
     },
   ],
 });
