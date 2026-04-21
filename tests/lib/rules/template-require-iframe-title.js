@@ -104,6 +104,38 @@ ruleTester.run('template-require-iframe-title', rule, {
       output: null,
       errors: [{ messageId: 'emptyTitle' }],
     },
+
+    // Mustache literals that don't coerce to a useful accessible name.
+    {
+      code: '<template><iframe title={{null}} /></template>',
+      output: null,
+      errors: [{ messageId: 'dynamicFalseTitle' }],
+    },
+    {
+      code: '<template><iframe title={{undefined}} /></template>',
+      output: null,
+      errors: [{ messageId: 'dynamicFalseTitle' }],
+    },
+    {
+      code: '<template><iframe title={{42}} /></template>',
+      output: null,
+      errors: [{ messageId: 'dynamicFalseTitle' }],
+    },
+    {
+      code: '<template><iframe title="{{null}}" /></template>',
+      output: null,
+      errors: [{ messageId: 'dynamicFalseTitle' }],
+    },
+    {
+      code: '<template><iframe title="{{undefined}}" /></template>',
+      output: null,
+      errors: [{ messageId: 'dynamicFalseTitle' }],
+    },
+    {
+      code: '<template><iframe title="{{42}}" /></template>',
+      output: null,
+      errors: [{ messageId: 'dynamicFalseTitle' }],
+    },
   ],
 });
 
