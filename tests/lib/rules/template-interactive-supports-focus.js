@@ -102,9 +102,8 @@ ruleTester.run('template-interactive-supports-focus', rule, {
   ],
 
   invalid: [
-    // === MISSING-COVERAGE from the Phase 3 audit: <div role="X"> with no
-    // tabindex and no inherent focus. Peers (jsx-a11y / vue-a11y /
-    // angular-eslint) all flag; our previous rule did not. Now it does. ===
+    // === Elements with an interactive role but no tabindex and no inherent
+    // focus — flagged (parity with jsx-a11y / vue-a11y / angular-eslint). ===
     {
       code: '<template><div role="button"></div></template>',
       output: null,
