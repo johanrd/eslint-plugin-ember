@@ -1,0 +1,108 @@
+'use strict';
+
+const rule = require('../../../lib/rules/template-no-interactive-element-to-noninteractive-role');
+const RuleTester = require('eslint').RuleTester;
+
+const ruleTester = new RuleTester({
+  parser: require.resolve('ember-eslint-parser'),
+  parserOptions: { ecmaVersion: 2022, sourceType: 'module' },
+});
+
+ruleTester.run('template-no-interactive-element-to-noninteractive-role', rule, {
+  valid: [
+    // Interactive elements with interactive roles — fine.
+    '<template><button role="button">Click</button></template>',
+    '<template><button role="menuitem">Item</button></template>',
+    '<template><a href="/x" role="link">Link</a></template>',
+    '<template><input type="checkbox" role="switch" /></template>',
+
+    // Non-interactive elements — not in scope of this rule.
+    '<template><div role="article">Story</div></template>',
+    '<template><span role="heading">Title</span></template>',
+
+    // No role → nothing to check.
+    '<template><button>Click</button></template>',
+    '<template><a href="/x">Link</a></template>',
+
+    // Dynamic role → skipped.
+    '<template><button role={{this.role}}>Click</button></template>',
+
+    // Components — rule skips (not a DOM element).
+    '<template><CustomBtn role="article" /></template>',
+
+    // Unknown role — rule skips.
+    '<template><button role="fakerole">Click</button></template>',
+
+    // <input type="hidden"> is not interactive — role assignment allowed.
+    '<template><input type="hidden" role="presentation" /></template>',
+
+    // <a> without href is not interactive.
+    '<template><a role="heading">Not a link</a></template>',
+  ],
+  invalid: [
+    {
+      code: '<template><button role="heading">Click</button></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><button role="article">Click</button></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><a href="/x" role="banner">Link</a></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><input type="text" role="article" /></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    // role="presentation" / "none" on an interactive element — removes the
+    // interactive semantics. Flagged.
+    {
+      code: '<template><button role="presentation">Click</button></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><a href="/x" role="none">Link</a></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    // Role-fallback list — picks the first recognised token.
+    {
+      code: '<template><button role="heading banner">Click</button></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+  ],
+});
+
+const hbsRuleTester = new RuleTester({
+  parser: require.resolve('ember-eslint-parser/hbs'),
+  parserOptions: { ecmaVersion: 2022, sourceType: 'module' },
+});
+
+hbsRuleTester.run('template-no-interactive-element-to-noninteractive-role', rule, {
+  valid: [
+    '<button role="button">Click</button>',
+    '<div role="article">Story</div>',
+    '<button>Click</button>',
+    '<CustomBtn role="article" />',
+  ],
+  invalid: [
+    {
+      code: '<button role="heading">Click</button>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<a href="/x" role="banner">Link</a>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+  ],
+});
