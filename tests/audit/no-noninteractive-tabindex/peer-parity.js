@@ -64,24 +64,19 @@ ruleTester.run('audit:no-noninteractive-tabindex (gts)', rule, {
     // Non-interactive native element + tabindex="-1" — valid via -1 exemption.
     '<template><article tabindex="-1"></article></template>',
 
-    // === DIVERGENCE — components whose name lowercases to a native tag ===
-    // jsx-a11y `components` setting maps `<Article>` → `article`, then treats
-    // it like the native tag. Without such a setting jsx-a11y would treat
-    // `<Article>` as an opaque component and skip.
-    // Our rule lowercases `node.tag` before the `dom.has(tag)` check, so
-    // `<Article>` becomes `article` and IS validated against the dom map.
-    // This has two effects:
-    //   (a) `<Article tabindex="-1" />` passes via the tabindex=-1 exemption
-    //       (valid in jsx-a11y too, so no visible divergence here).
-    //   (b) `<Article tabindex={{0}} />` is FLAGGED by our rule (see invalid
-    //       section below). jsx-a11y without `components` setting: VALID (opaque
-    //       component skip). jsx-a11y with `components: {Article: 'article'}`
-    //       setting: INVALID. Our rule: INVALID regardless — false positive
-    //       for the no-settings case.
-    // Components whose name does NOT collide with a native tag (e.g.
-    // `<MyButton>` → `mybutton` which is not in the dom map) are correctly
-    // skipped.
+    // === Upstream parity — PascalCase component skip ===
+    // Components whose name lowercases to a native tag (e.g. `<Article>` →
+    // `article`) are correctly skipped by `isComponentInvocation`, which
+    // classifies the invocation BEFORE the `dom.has(tag)` check. Parity with
+    // jsx-a11y's no-settings default (opaque component skip).
+    //
+    // Previously this was a FALSE POSITIVE (audit B8): `<Article tabindex={{0}} />`
+    // was flagged because the rule lowercased `node.tag` before the
+    // `dom.has(tag)` check, matching `article` in the dom map and validating
+    // the component like the native tag. Adopting `isComponentInvocation`
+    // fixes the FP.
     '<template><Article tabindex="-1" /></template>',
+    '<template><Article tabindex={{0}} /></template>',
 
     // === Upstream parity (jsx-a11y recommended valid) ===
 
@@ -154,23 +149,11 @@ ruleTester.run('audit:no-noninteractive-tabindex (gts)', rule, {
     //   assertion here; captured as a comment only. Our behavior matches
     //   jsx-a11y RECOMMENDED, not strict.
 
-    // === DIVERGENCE — component name collides with a native tag ===
-    // `<Article tabIndex={0} />` — classifications:
-    //   jsx-a11y without `components` setting: VALID (opaque component skip).
-    //   jsx-a11y with `components: {Article: 'article'}`: INVALID (article
-    //     is non-interactive).
-    //   Our rule: INVALID unconditionally. We lowercase `node.tag` before the
-    //     `dom.has(tag)` check, so `Article` → `article` is found in the dom
-    //     map and validated like the native tag. This is a FALSE POSITIVE
-    //     relative to jsx-a11y's no-settings default, and accidental parity
-    //     with jsx-a11y's components-configured mode.
-    //   Components whose lowercased name doesn't collide with a native tag
-    //     (e.g. `<MyButton>`) are correctly skipped.
-    {
-      code: '<template><Article tabindex={{0}} /></template>',
-      output: null,
-      errors: [{ messageId: 'noNonInteractiveTabindex' }],
-    },
+    // === Resolved — component name collides with a native tag ===
+    // Audit B8 previously flagged `<Article tabindex={{0}} />` as a FALSE
+    // POSITIVE. After adopting `isComponentInvocation`, PascalCase components
+    // (including those whose lowercased name collides with a native tag) are
+    // correctly skipped. See the valid section for the parity assertion.
   ],
 });
 
@@ -189,11 +172,12 @@ hbsRuleTester.run('audit:no-noninteractive-tabindex (hbs)', rule, {
     '<article tabindex="-1"></article>',
     // Dynamic role — parity with jsx-a11y recommended (allowExpressionValues: true).
     '<div role={{this.role}} tabindex="0"></div>',
-    // Non-tag-colliding component — skipped (not in aria-query dom map).
-    // Parity with jsx-a11y's no-settings default.
-    // (Components whose lowercased name collides with a native tag diverge;
-    //  see `<Article tabindex={{0}} />` in the gts invalid section.)
+    // Component invocation — skipped via isComponentInvocation. Parity with
+    // jsx-a11y's no-settings default. Holds for both non-colliding names
+    // (e.g. `<MyButton>`) and names that lowercase to a native tag
+    // (e.g. `<Article>` → `article`).
     '<MyButton tabindex="0" />',
+    '<Article tabindex="0"></Article>',
   ],
   invalid: [
     // Parity — neverValid cases in hbs form.

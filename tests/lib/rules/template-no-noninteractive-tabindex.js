@@ -37,6 +37,22 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     '<template><CustomWidget tabindex="0" /></template>',
     '<template><my-widget tabindex="0"></my-widget></template>',
 
+    // PascalCase component whose name lowercases to a native tag — rule skips.
+    // Before adopting isComponentInvocation, `<Article>` collided with
+    // `article` in aria-query's dom map and produced a false positive
+    // (audit B8). isComponentInvocation correctly classifies it as a
+    // component invocation before the dom-map check.
+    '<template><Article tabindex={{0}} /></template>',
+    '<template><Article tabindex="0" /></template>',
+    '<template><Form tabindex={{0}} /></template>',
+    '<template><Section tabindex="0" /></template>',
+
+    // Named-arg, this-path, dot-path, and named-block invocations — rule skips.
+    '<template><@heading tabindex="0" /></template>',
+    '<template><this.myWidget tabindex="0" /></template>',
+    '<template><foo.bar tabindex="0" /></template>',
+    '<template><Foo::Bar tabindex="0" /></template>',
+
     // Dynamic role — rule conservatively skips.
     '<template><div role={{this.role}} tabindex="0"></div></template>',
 
