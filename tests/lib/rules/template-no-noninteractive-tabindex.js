@@ -38,10 +38,8 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     '<template><my-widget tabindex="0"></my-widget></template>',
 
     // PascalCase component whose name lowercases to a native tag — rule skips.
-    // Before adopting isComponentInvocation, `<Article>` collided with
-    // `article` in aria-query's dom map and produced a false positive
-    // (audit B8). isComponentInvocation correctly classifies it as a
-    // component invocation before the dom-map check.
+    // `isComponentInvocation` classifies the invocation before the dom-map
+    // check, so `<Article>` is not validated like the native `<article>` tag.
     '<template><Article tabindex={{0}} /></template>',
     '<template><Article tabindex="0" /></template>',
     '<template><Form tabindex={{0}} /></template>',

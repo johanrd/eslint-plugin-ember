@@ -69,12 +69,6 @@ ruleTester.run('audit:no-noninteractive-tabindex (gts)', rule, {
     // `article`) are correctly skipped by `isComponentInvocation`, which
     // classifies the invocation BEFORE the `dom.has(tag)` check. Parity with
     // jsx-a11y's no-settings default (opaque component skip).
-    //
-    // Previously this was a FALSE POSITIVE (audit B8): `<Article tabindex={{0}} />`
-    // was flagged because the rule lowercased `node.tag` before the
-    // `dom.has(tag)` check, matching `article` in the dom map and validating
-    // the component like the native tag. Adopting `isComponentInvocation`
-    // fixes the FP.
     '<template><Article tabindex="-1" /></template>',
     '<template><Article tabindex={{0}} /></template>',
 
