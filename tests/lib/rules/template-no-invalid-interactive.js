@@ -66,10 +66,8 @@ ruleTester.run('template-no-invalid-interactive', rule, {
     // <summary> is natively interactive
     '<template><summary onclick={{this.toggle}}>Details</summary></template>',
 
-    // ARIA widget roles: scrollbar, treeitem (+ many others from the shared
-    // interactive-roles util). tooltip is intentionally NOT in the widget
-    // set (per WAI-ARIA 1.2 §5.3.3 it's a document-structure role) and so
-    // handlers on `role="tooltip"` should be flagged — see invalid cases.
+    // ARIA widget roles: scrollbar, treeitem
+    // (tooltip is not a widget per WAI-ARIA 1.2 §5.3.3 — document-structure role)
     '<template><div role="scrollbar" onclick={{this.scroll}}>Scroll</div></template>',
     '<template><div role="treeitem" onclick={{this.select}}>Node</div></template>',
 
