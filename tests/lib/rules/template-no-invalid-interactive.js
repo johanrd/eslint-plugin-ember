@@ -112,18 +112,20 @@ ruleTester.run('template-no-invalid-interactive', rule, {
     '<template><my-element onclick={{this.handler}}></my-element></template>',
     '<template><x-foo {{on "click" this.handler}}></x-foo></template>',
 
-    // Non-interactive escape hatches — `role="presentation"` / `role="none"`
-    // / `aria-hidden` opt the element out of interactive-role semantics.
-    // Matches jsx-a11y (`hasPresentationRole`, aria-hidden handling in
-    // `isInteractiveElement`) and vuejs-accessibility.
+    // Non-interactive escape hatches:
+    //  - role="presentation"/"none" (per WAI-ARIA 1.2 §4.6 presentation-role
+    //    semantics — decorative element, no exposed semantics);
+    //  - aria-hidden="true" or {{true}} (per WAI-ARIA 1.2 §aria-hidden).
+    //    Valueless/empty aria-hidden resolves to default `undefined` per
+    //    §6.6 and does NOT qualify — flagged below in invalid.
     '<template><div role="presentation" onclick={{this.h}}></div></template>',
     '<template><div role="none" onclick={{this.h}}></div></template>',
     '<template><div role="presentation" {{on "click" this.h}}></div></template>',
     '<template><div role="none" {{action "foo"}}></div></template>',
     '<template><div aria-hidden="true" onclick={{this.h}}></div></template>',
-    '<template><div aria-hidden onclick={{this.h}}></div></template>',
     '<template><div aria-hidden={{true}} onclick={{this.h}}></div></template>',
     '<template><div aria-hidden="true" {{on "click" this.h}}></div></template>',
+    '<template><div aria-hidden="TRUE" onclick={{this.h}}></div></template>',
     // Case-insensitive / whitespace tolerance on role values.
     '<template><div role="  Presentation  " onclick={{this.h}}></div></template>',
     '<template><div role="NONE" onclick={{this.h}}></div></template>',
@@ -231,6 +233,19 @@ ruleTester.run('template-no-invalid-interactive', rule, {
     {
       // `aria-hidden="false"` does NOT opt out — element is still exposed.
       code: '<template><div aria-hidden="false" onclick={{this.h}}></div></template>',
+      output: null,
+      errors: [{ messageId: 'noInvalidInteractive' }],
+    },
+    {
+      // Valueless aria-hidden resolves to default `undefined` per WAI-ARIA
+      // 1.2 §6.6 — not an opt-out.
+      code: '<template><div aria-hidden onclick={{this.h}}></div></template>',
+      output: null,
+      errors: [{ messageId: 'noInvalidInteractive' }],
+    },
+    {
+      // Empty-string aria-hidden — same default-undefined resolution.
+      code: '<template><div aria-hidden="" onclick={{this.h}}></div></template>',
       output: null,
       errors: [{ messageId: 'noInvalidInteractive' }],
     },
