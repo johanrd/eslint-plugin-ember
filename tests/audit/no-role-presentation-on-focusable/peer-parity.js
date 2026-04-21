@@ -109,7 +109,7 @@ ruleTester.run('audit:no-role-presentation-on-focusable (gts)', rule, {
 // of the wrapper is not spec-mandated; their descendant recursion is uncommented
 // in source and appears to be a copy-paste from their aria-hidden rule.
 //
-// Contrast with `template-no-aria-hidden-on-focusable` (see G5.1), where
+// Contrast with `template-no-aria-hidden-on-focusable`, where
 // recursion into descendants IS spec-correct because aria-hidden DOES cascade
 // to the entire subtree per WAI-ARIA 1.2 §6.6 and creates a real keyboard trap
 // (focus lands on AT-hidden content).
