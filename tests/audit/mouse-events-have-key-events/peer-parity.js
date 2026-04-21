@@ -177,8 +177,8 @@ ruleTester.run('audit:mouse-events-have-key-events (gts)', rule, {
     // with `<div onMouseOver={...} onMouseOut={...} />` → two errors.
     {
       code: '<template><div {{on "mouseover" this.h}} {{on "mouseout" this.g}}></div></template>',
-      options: [{ hoverInHandlers: ['mouseover'], hoverOutHandlers: ['mouseout'] }],
       output: null,
+      options: [{ hoverInHandlers: ['mouseover'], hoverOutHandlers: ['mouseout'] }],
       errors: [{ messageId: 'hoverInMissing' }, { messageId: 'hoverOutMissing' }],
     },
 
@@ -187,37 +187,37 @@ ruleTester.run('audit:mouse-events-have-key-events (gts)', rule, {
     // Translation uses lower-case native event names.
     {
       code: '<template><div {{on "pointerenter" this.h}} {{on "pointerleave" this.g}}></div></template>',
-      options: [{ hoverInHandlers: ['pointerenter'], hoverOutHandlers: ['pointerleave'] }],
       output: null,
+      options: [{ hoverInHandlers: ['pointerenter'], hoverOutHandlers: ['pointerleave'] }],
       errors: [{ messageId: 'hoverInMissing' }, { messageId: 'hoverOutMissing' }],
     },
 
     // jsx-a11y: `{ hoverInHandlers: ['onMouseOver'] }` with `<div onMouseOver={...} />` → error.
     {
       code: '<template><div {{on "mouseover" this.h}}></div></template>',
-      options: [{ hoverInHandlers: ['mouseover'] }],
       output: null,
+      options: [{ hoverInHandlers: ['mouseover'] }],
       errors: [{ messageId: 'hoverInMissing' }],
     },
     // jsx-a11y: same shape with onPointerEnter.
     {
       code: '<template><div {{on "pointerenter" this.h}}></div></template>',
-      options: [{ hoverInHandlers: ['pointerenter'] }],
       output: null,
+      options: [{ hoverInHandlers: ['pointerenter'] }],
       errors: [{ messageId: 'hoverInMissing' }],
     },
     // jsx-a11y: `{ hoverOutHandlers: ['onMouseOut'] }` with `<div onMouseOut={...} />`.
     {
       code: '<template><div {{on "mouseout" this.h}}></div></template>',
-      options: [{ hoverOutHandlers: ['mouseout'] }],
       output: null,
+      options: [{ hoverOutHandlers: ['mouseout'] }],
       errors: [{ messageId: 'hoverOutMissing' }],
     },
     // jsx-a11y: `{ hoverOutHandlers: ['onPointerLeave'] }` — pointerleave alone flagged.
     {
       code: '<template><div {{on "pointerleave" this.h}}></div></template>',
-      options: [{ hoverOutHandlers: ['pointerleave'] }],
       output: null,
+      options: [{ hoverOutHandlers: ['pointerleave'] }],
       errors: [{ messageId: 'hoverOutMissing' }],
     },
 
