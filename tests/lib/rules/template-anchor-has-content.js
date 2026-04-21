@@ -64,6 +64,21 @@ ruleTester.run('template-anchor-has-content', rule, {
       filename: 'test.gjs',
       code: '<template><a href="/x"><span aria-label="close icon" /></a></template>',
     },
+
+    // Valueless / empty aria-hidden resolves to default `undefined` per
+    // WAI-ARIA 1.2 §6.6 — the child is NOT hidden, its content counts.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><span aria-hidden>X</span></a></template>',
+    },
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><span aria-hidden="">X</span></a></template>',
+    },
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><img aria-hidden alt="Nope" /></a></template>',
+    },
   ],
 
   invalid: [
@@ -88,23 +103,17 @@ ruleTester.run('template-anchor-has-content', rule, {
       output: null,
       errors: [{ messageId: 'anchorHasContent' }],
     },
-    // aria-hidden subtree contributes nothing to the accessible name.
+    // aria-hidden="true" subtree contributes nothing to the accessible name.
     {
       filename: 'test.gjs',
       code: '<template><a href="/x"><span aria-hidden="true">X</span></a></template>',
       output: null,
       errors: [{ messageId: 'anchorHasContent' }],
     },
+    // <img aria-hidden="true" alt="Nope" /> — alt not exposed when hidden.
     {
       filename: 'test.gjs',
-      code: '<template><a href="/x"><span aria-hidden>X</span></a></template>',
-      output: null,
-      errors: [{ messageId: 'anchorHasContent' }],
-    },
-    // <img aria-hidden /> — alt is not exposed when the image is hidden.
-    {
-      filename: 'test.gjs',
-      code: '<template><a href="/x"><img aria-hidden alt="Nope" /></a></template>',
+      code: '<template><a href="/x"><img aria-hidden="true" alt="Nope" /></a></template>',
       output: null,
       errors: [{ messageId: 'anchorHasContent' }],
     },
@@ -170,6 +179,10 @@ hbsRuleTester.run('template-anchor-has-content (hbs)', rule, {
     // Anchors without href are out of scope.
     '<a />',
     '<a>Foo</a>',
+    // Valueless aria-hidden resolves to default `undefined` per ARIA §6.6 —
+    // child is not hidden, its content counts.
+    '<a href="/x"><span aria-hidden>X</span></a>',
+    '<a href="/x"><img aria-hidden alt="Nope" /></a>',
   ],
   invalid: [
     {
@@ -183,12 +196,12 @@ hbsRuleTester.run('template-anchor-has-content (hbs)', rule, {
       errors: [{ messageId: 'anchorHasContent' }],
     },
     {
-      code: '<a href="/x"><span aria-hidden>X</span></a>',
+      code: '<a href="/x"><span aria-hidden="true">X</span></a>',
       output: null,
       errors: [{ messageId: 'anchorHasContent' }],
     },
     {
-      code: '<a href="/x"><img aria-hidden alt="Nope" /></a>',
+      code: '<a href="/x"><img aria-hidden="true" alt="Nope" /></a>',
       output: null,
       errors: [{ messageId: 'anchorHasContent' }],
     },
