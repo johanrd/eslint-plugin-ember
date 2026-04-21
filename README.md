@@ -228,6 +228,7 @@ To disable a rule for an entire `.gjs`/`.gts` file, use a regular ESLint file-le
 
 | Name                                                                                                             | Description                                                                      | 💼 | 🔧 | 💡 |
 | :--------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------- | :- | :- | :- |
+| [template-interactive-supports-focus](docs/rules/template-interactive-supports-focus.md)                         | require elements with an interactive ARIA role to be focusable                   |    |    |    |
 | [template-link-href-attributes](docs/rules/template-link-href-attributes.md)                                     | require href attribute on link elements                                          | 📋 |    |    |
 | [template-no-abstract-roles](docs/rules/template-no-abstract-roles.md)                                           | disallow abstract ARIA roles                                                     | 📋 |    |    |
 | [template-no-accesskey-attribute](docs/rules/template-no-accesskey-attribute.md)                                 | disallow accesskey attribute                                                     | 📋 | 🔧 |    |
