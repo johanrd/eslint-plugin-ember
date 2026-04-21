@@ -23,6 +23,12 @@ ruleTester.run('template-no-aria-hidden-on-focusable', rule, {
     // aria-hidden="false" — explicit opt-out. Not flagged.
     '<template><button aria-hidden="false">Click me</button></template>',
 
+    // Valueless / empty aria-hidden resolves to default `undefined` per
+    // WAI-ARIA 1.2 §6.6 — not hidden, not flagged even on focusable hosts.
+    '<template><button aria-hidden>Click me</button></template>',
+    '<template><button aria-hidden="">Click me</button></template>',
+    '<template><button aria-hidden={{false}}>Click me</button></template>',
+
     // <input type="hidden"> isn't focusable, so aria-hidden on it is fine.
     '<template><input type="hidden" aria-hidden="true" /></template>',
 
@@ -95,19 +101,14 @@ ruleTester.run('template-no-aria-hidden-on-focusable', rule, {
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
     },
 
-    // Boolean / valueless / mustache-boolean aria-hidden — all truthy.
-    {
-      code: '<template><button aria-hidden></button></template>',
-      output: null,
-      errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
-    },
-    {
-      code: '<template><button aria-hidden=""></button></template>',
-      output: null,
-      errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
-    },
+    // Mustache-boolean + case-variant aria-hidden = true — truthy per spec.
     {
       code: '<template><button aria-hidden={{true}}></button></template>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
+    },
+    {
+      code: '<template><button aria-hidden="TRUE"></button></template>',
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
     },
