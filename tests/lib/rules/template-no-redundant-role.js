@@ -48,6 +48,7 @@ ruleTester.run('template-no-redundant-role', rule, {
       options: [{ checkAllHTMLElements: false }],
     },
     '<template><input role="combobox"></template>',
+<<<<<<< HEAD
     // <select multiple> has implicit role listbox, so combobox is not redundant.
     '<template><select role="combobox" multiple></select></template>',
     // <select size="5"> (size > 1) has implicit role listbox.
@@ -66,6 +67,13 @@ ruleTester.run('template-no-redundant-role', rule, {
     // <button> resolves to `tab` (non-redundant — button's implicit is
     // `button`, not `tab`). WAI-ARIA §4.1 fallback-list semantics.
     '<template><button role="tab button"></button></template>',
+    // `region` is a landmark role, but <div> has no implicit role — role="region"
+    // on a <div> is not redundant.
+    '<template><div role="region"></div></template>',
+    {
+      code: '<template><div role="region"></div></template>',
+      options: [{ checkAllHTMLElements: false }],
+    },
   ],
   invalid: [
     {
