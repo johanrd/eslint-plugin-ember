@@ -89,15 +89,32 @@ ruleTester.run('audit:no-role-presentation-on-focusable (gts)', rule, {
 // DESCENDANT is focusable:
 //   <div role='presentation'><button>Submit</button></div>      → vue: INVALID
 // Our rule only inspects the element bearing the role. A non-focusable wrapper
-// is left alone; the authoring error vue targets (stripping semantics from
-// a container whose children remain focusable) is not detected by us.
+// is left alone.
 //
-// This is a known gap, not a bug fix waiting to happen:
-//  - The WAI-ARIA §4.6 conflict-resolution text is phrased for elements with
-//    role=presentation that are themselves focusable. Applying it to ancestors
-//    is vue's interpretation, not a spec mandate.
-//  - Our rule is narrower and has fewer false positives, at the cost of this
-//    true positive.
+// Spec grounding (WAI-ARIA 1.2):
+//  - §4.6 "Presentational Roles Conflict Resolution"
+//    (https://www.w3.org/TR/wai-aria-1.2/#conflict_resolution_presentation_none)
+//    describes how role="presentation" / role="none" behaves on the element
+//    that carries it — NOT a cascade. It explicitly states that descendants
+//    retain their own semantics, and only the host element's implicit role is
+//    suppressed (and even that is overridden when the host is focusable or has
+//    global ARIA state/property attributes).
+//  - §5.3.3 "Document Structure Roles"
+//    (https://www.w3.org/TR/wai-aria-1.2/#document_structure_roles)
+//    reaffirms: role="presentation" / "none" does not propagate into the
+//    subtree; each descendant keeps its role and interactivity.
+//
+// So `<div role="presentation"><button>X</button></div>` is not a semantic
+// problem: the div's role is a no-op (div had no meaningful role to suppress),
+// and the button remains fully interactive with its role intact. Vue's flagging
+// of the wrapper is not spec-mandated; their descendant recursion is uncommented
+// in source and appears to be a copy-paste from their aria-hidden rule.
+//
+// Contrast with `template-no-aria-hidden-on-focusable` (see G5.1), where
+// recursion into descendants IS spec-correct because aria-hidden DOES cascade
+// to the entire subtree per WAI-ARIA 1.2 §6.6 and creates a real keyboard trap
+// (focus lands on AT-hidden content).
+//
 // Captured here as a "valid" bucket for OUR rule to make the divergence
 // explicit in the audit output.
 ruleTester.run('audit:no-role-presentation-on-focusable — wrapper scope (gts)', rule, {
