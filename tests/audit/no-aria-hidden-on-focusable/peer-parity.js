@@ -113,9 +113,9 @@ ruleTester.run('audit:no-aria-hidden-on-focusable (gts)', rule, {
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
     },
 
-    // === Upstream parity with vue-a11y descendant-focusable check (G5.1) ===
+    // === Upstream parity with vue-a11y descendant-focusable check ===
     // vue-a11y: INVALID when aria-hidden is on an ancestor and a focusable
-    //   descendant exists. Our rule now matches this via hasFocusableDescendant.
+    //   descendant exists. Our rule matches via hasFocusableDescendant.
     //   Per WAI-ARIA 1.2 §aria-hidden "may receive focus", a focusable
     //   descendant beneath an aria-hidden ancestor is keyboard-reachable while
     //   hidden from AT — a keyboard trap.
@@ -126,19 +126,16 @@ ruleTester.run('audit:no-aria-hidden-on-focusable (gts)', rule, {
     },
 
     // === DIVERGENCE — `tabindex="-1"` on an inherently focusable element ===
-    // This is the load-bearing, intentional divergence that PR #19 encodes.
     // jsx-a11y: VALID — `<button aria-hidden="true" tabIndex="-1" />` is
     //   accepted; the author has acknowledged the element is "escorted out"
     //   of the tab order.
     // vue-a11y: VALID — same: `<button tabindex="-1" aria-hidden="true">`
     //   is accepted.
-    // Our rule: INVALID. Rationale (see lib/rules/template-no-aria-hidden-on-focusable.js
-    //   lines 54-62): tabindex="-1" still makes the element *programmatically*
-    //   focusable (reachable via `.focus()` and click). Combined with
-    //   aria-hidden="true" this creates a keyboard trap / AT-invisibility
-    //   mismatch. Our rule flags any tabindex attribute on an aria-hidden
-    //   element regardless of value.
-    // This is the DIVERGENCE the PR is defending.
+    // Our rule: INVALID. tabindex="-1" still makes the element
+    //   *programmatically* focusable (reachable via `.focus()` and click).
+    //   Combined with aria-hidden="true" this creates a keyboard trap /
+    //   AT-invisibility mismatch. Our rule flags any tabindex attribute on an
+    //   aria-hidden element regardless of value.
     {
       code: '<template><button aria-hidden="true" tabindex="-1"></button></template>',
       output: null,
@@ -150,7 +147,7 @@ ruleTester.run('audit:no-aria-hidden-on-focusable (gts)', rule, {
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
     },
 
-    // === DIVERGENCE (extended by G5.1) — tabindex="-1" on a DESCENDANT ===
+    // === DIVERGENCE — tabindex="-1" on a DESCENDANT ===
     // Same rationale as above, applied through hasFocusableDescendant: our
     // `isFocusable` treats any tabindex (including "-1") as programmatically
     // focusable. vue-a11y considers these VALID (descendant is "escorted out"
@@ -186,7 +183,7 @@ ruleTester.run('audit:no-aria-hidden-on-focusable (gts)', rule, {
 // jsx-a11y: has no explicit case for this. Our rule special-cases
 //   `<input type="hidden">` as non-focusable. Captured in main rule tests.
 
-// === PARITY — vue-a11y descendant-focusable check (G5.1, PR #19 follow-up) ===
+// === PARITY — vue-a11y descendant-focusable check ===
 // vue-a11y: INVALID when aria-hidden is on an ancestor and a focusable
 //   descendant exists:
 //     `<div aria-hidden="true"><button>Submit</button></div>`  → flagged
@@ -263,13 +260,13 @@ hbsRuleTester.run('audit:no-aria-hidden-on-focusable (hbs)', rule, {
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
     },
-    // G5.1 parity — aria-hidden ancestor with focusable descendant.
+    // Parity — aria-hidden ancestor with focusable descendant.
     {
       code: '<div aria-hidden="true"><button>Submit</button></div>',
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
     },
-    // G5.1 — DIVERGENCE extended: descendant with tabindex="-1".
+    // DIVERGENCE — descendant with tabindex="-1".
     {
       code: '<div aria-hidden="true"><button tabindex="-1">Some text</button></div>',
       output: null,

@@ -112,7 +112,7 @@ ruleTester.run('template-no-aria-hidden-on-focusable', rule, {
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
     },
 
-    // Descendant-focusable check (G5.1). Per WAI-ARIA 1.2 §aria-hidden
+    // Descendant-focusable check. Per WAI-ARIA 1.2 §aria-hidden
     // "may receive focus" — focusable descendants are keyboard-reachable
     // under an aria-hidden ancestor, creating a keyboard trap.
     {
@@ -203,7 +203,7 @@ hbsRuleTester.run('template-no-aria-hidden-on-focusable', rule, {
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
     },
-    // Descendant-focusable check (G5.1).
+    // Descendant-focusable check.
     {
       code: '<div aria-hidden="true"><button>Close</button></div>',
       output: null,
