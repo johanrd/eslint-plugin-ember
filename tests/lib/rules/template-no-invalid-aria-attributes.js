@@ -32,6 +32,8 @@ ruleTester.run('template-no-invalid-aria-attributes', rule, {
     '<template><button type="submit" aria-disabled={{this.isDisabled}}>Submit</button></template>',
     '<template><div role="textbox" aria-sort={{if this.hasCustomSort "other" "ascending"}}></div></template>',
     '<template><div role="combobox" aria-expanded="undefined"></div></template>',
+    '<template><div role="slider" aria-orientation="undefined"></div></template>',
+    '<template><div role="slider" aria-orientation="horizontal"></div></template>',
     '<template><button aria-label={{if @isNew (t "actions.add") (t "actions.edit")}}></button></template>',
   ],
   invalid: [
@@ -121,6 +123,11 @@ ruleTester.run('template-no-invalid-aria-attributes', rule, {
       output: null,
       errors: [{ messageId: 'invalidAriaAttributeValue' }],
     },
+    {
+      code: '<template><div role="slider" aria-orientation="sideways"></div></template>',
+      output: null,
+      errors: [{ messageId: 'invalidAriaAttributeValue' }],
+    },
   ],
 });
 
@@ -150,6 +157,8 @@ hbsRuleTester.run('template-no-invalid-aria-attributes', rule, {
     '<button type="submit" aria-disabled={{this.isDisabled}}>Submit</button>',
     '<div role="textbox" aria-sort={{if this.hasCustomSort "other" "ascending"}}></div>',
     '<div role="combobox" aria-expanded="undefined"></div>',
+    '<div role="slider" aria-orientation="undefined"></div>',
+    '<div role="slider" aria-orientation="horizontal"></div>',
     '<button aria-label={{if @isNew (t "actions.add") (t "actions.edit")}}></button>',
   ],
   invalid: [
@@ -220,6 +229,11 @@ hbsRuleTester.run('template-no-invalid-aria-attributes', rule, {
     },
     {
       code: '<input type="text" aria-required="undefined" />',
+      output: null,
+      errors: [{ messageId: 'invalidAriaAttributeValue' }],
+    },
+    {
+      code: '<div role="slider" aria-orientation="sideways"></div>',
       output: null,
       errors: [{ messageId: 'invalidAriaAttributeValue' }],
     },
