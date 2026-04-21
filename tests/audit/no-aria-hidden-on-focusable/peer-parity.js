@@ -114,19 +114,19 @@ ruleTester.run('audit:no-aria-hidden-on-focusable (gts)', rule, {
 
     // vue-a11y: `<button type aria-hidden>` — inherently focusable.
     {
-      code: `<template><button type="button" aria-hidden="true">Submit</button></template>`,
+      code: '<template><button type="button" aria-hidden="true">Submit</button></template>',
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
     },
     // vue-a11y: `<a href aria-hidden>` — focusable.
     {
-      code: `<template><a href="#" aria-hidden="true">Link</a></template>`,
+      code: '<template><a href="#" aria-hidden="true">Link</a></template>',
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
     },
     // vue-a11y: `<span tabindex="0" aria-hidden>` — tabindex makes focusable.
     {
-      code: `<template><span tabindex="0" aria-hidden="true"><em>Icon</em></span></template>`,
+      code: '<template><span tabindex="0" aria-hidden="true"><em>Icon</em></span></template>',
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
     },
