@@ -25,6 +25,8 @@ ruleTester.run('template-click-events-have-key-events', rule, {
     // Hidden from AT.
     '<template><div aria-hidden="true" {{on "click" this.noop}}></div></template>',
     '<template><div aria-hidden {{on "click" this.noop}}></div></template>',
+    // Mustache-literal boolean `true` — explicit static opt-out.
+    '<template><div aria-hidden={{true}} {{on "click" this.noop}}></div></template>',
     '<template><div hidden {{on "click" this.noop}}></div></template>',
 
     // Presentation role — content has no semantics for AT.
@@ -63,6 +65,20 @@ ruleTester.run('template-click-events-have-key-events', rule, {
     // aria-hidden="false" is not truthy — rule still fires.
     {
       code: '<template><div aria-hidden="false" {{on "click" this.onClick}}></div></template>',
+      output: null,
+      errors: [{ messageId: 'needsKeyEvent' }],
+    },
+    // Mustache-literal `{{false}}` is explicitly not-hidden.
+    {
+      code: '<template><div aria-hidden={{false}} {{on "click" this.onClick}}></div></template>',
+      output: null,
+      errors: [{ messageId: 'needsKeyEvent' }],
+    },
+    // Dynamic mustache (non-literal) — rule can't prove the element is
+    // hidden, so it still fires. Authors who intend aria-hidden as a static
+    // escape hatch should use a literal.
+    {
+      code: '<template><div aria-hidden={{this.maybeHidden}} {{on "click" this.onClick}}></div></template>',
       output: null,
       errors: [{ messageId: 'needsKeyEvent' }],
     },

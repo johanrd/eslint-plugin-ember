@@ -52,6 +52,9 @@ ruleTester.run('audit:click-events-have-key-events (gts)', rule, {
     // angular: valid (static `aria-hidden`, `aria-hidden="true"`).
     '<template><div aria-hidden {{on "click" this.onClick}}></div></template>',
     '<template><div aria-hidden="true" {{on "click" this.onClick}}></div></template>',
+    // `aria-hidden={{true}}` — HBS analog of jsx-a11y's `aria-hidden={true}`.
+    // Our rule treats the mustache-literal boolean as a static opt-out.
+    '<template><div aria-hidden={{true}} {{on "click" this.onClick}}></div></template>',
 
     // aria-hidden=false paired with a keyboard listener → still valid because
     // the keyboard listener is present.
@@ -290,6 +293,7 @@ hbsRuleTester.run('audit:click-events-have-key-events (hbs)', rule, {
     // aria-hidden.
     '<div aria-hidden {{on "click" this.a}}></div>',
     '<div aria-hidden="true" {{on "click" this.a}}></div>',
+    '<div aria-hidden={{true}} {{on "click" this.a}}></div>',
 
     // Inherently-interactive.
     '<button {{on "click" this.a}}></button>',
