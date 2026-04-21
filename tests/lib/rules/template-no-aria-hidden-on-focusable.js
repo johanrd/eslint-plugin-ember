@@ -32,6 +32,12 @@ ruleTester.run('template-no-aria-hidden-on-focusable', rule, {
     // Components — we don't know if they render a focusable element.
     '<template><CustomBtn aria-hidden="true" /></template>',
 
+    // <audio> / <video> without `controls` are not interactive — no focusable UI.
+    '<template><video aria-hidden="true"></video></template>',
+    '<template><audio aria-hidden="true"></audio></template>',
+    '<template><div aria-hidden="true"><video></video></div></template>',
+    '<template><div aria-hidden="true"><audio></audio></div></template>',
+
     // Descendant-focusable check — valid cases.
     // No focusable descendant.
     '<template><div aria-hidden="true"><span>Just text</span></div></template>',
@@ -133,8 +139,6 @@ ruleTester.run('template-no-aria-hidden-on-focusable', rule, {
     },
     {
       // Depth check — focusable descendant two levels deep.
-      // (Our isFocusable doesn't treat <video controls> as focusable because
-      // it's not in INHERENTLY_FOCUSABLE_TAGS; use <textarea> instead.)
       code: '<template><section aria-hidden="true"><div><textarea></textarea></div></section></template>',
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
@@ -142,6 +146,30 @@ ruleTester.run('template-no-aria-hidden-on-focusable', rule, {
     {
       // tabindex on a descendant makes it focusable.
       code: '<template><div aria-hidden="true"><span tabindex="0">x</span></div></template>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
+
+    // <audio controls> / <video controls> expose focusable UI; flag directly.
+    {
+      code: '<template><video controls aria-hidden="true"></video></template>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
+    },
+    {
+      code: '<template><audio controls aria-hidden="true"></audio></template>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
+    },
+    // <audio controls> / <video controls> as focusable descendants of an
+    // aria-hidden ancestor.
+    {
+      code: '<template><div aria-hidden="true"><video controls></video></div></template>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
+    {
+      code: '<template><div aria-hidden="true"><audio controls></audio></div></template>',
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
     },
@@ -183,6 +211,18 @@ hbsRuleTester.run('template-no-aria-hidden-on-focusable', rule, {
     },
     {
       code: '<section aria-hidden="true"><div><a href="/x">Link</a></div></section>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
+    },
+    // <audio controls> / <video controls> — directly focusable.
+    {
+      code: '<video controls aria-hidden="true"></video>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
+    },
+    // <audio controls> / <video controls> — focusable descendant.
+    {
+      code: '<div aria-hidden="true"><audio controls></audio></div>',
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnAncestorOfFocusable' }],
     },
