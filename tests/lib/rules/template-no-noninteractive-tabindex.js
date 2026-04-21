@@ -32,15 +32,19 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
 
     // Dynamic role — rule conservatively skips.
     '<template><div role={{this.role}} tabindex="0"></div></template>',
+
+    // tabindex="-1" is the canonical "focusable but not in tab order" pattern
+    // (scroll-to-focus targets, focus restoration, composite-widget children).
+    // Matches jsx-a11y's exemption and is consistent with
+    // template-require-aria-activedescendant-tabindex.
+    '<template><div tabindex="-1"></div></template>',
+    '<template><span tabindex="-1">text</span></template>',
+    '<template><section tabindex="-1">scroll target</section></template>',
+    '<template><div tabindex={{-1}}></div></template>',
   ],
   invalid: [
     {
       code: '<template><div tabindex="0"></div></template>',
-      output: null,
-      errors: [{ messageId: 'noNonInteractiveTabindex' }],
-    },
-    {
-      code: '<template><span tabindex="-1">text</span></template>',
       output: null,
       errors: [{ messageId: 'noNonInteractiveTabindex' }],
     },

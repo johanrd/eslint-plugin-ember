@@ -8,6 +8,8 @@ Adding `tabindex="0"` to a `<div>`, `<section>`, etc. puts it in the keyboard ta
 
 If the element is meant to be interactive, give it an explicit ARIA role (`button`, `checkbox`, …) **and** wire up the appropriate keyboard event handlers. If it isn't meant to be interactive, remove the tabindex.
 
+`tabindex="-1"` is exempt — it marks an element as programmatically focusable but skipped by the Tab key, the canonical pattern for scroll-to-focus targets, focus restoration, and composite-widget children. See [`template-require-aria-activedescendant-tabindex`](./template-require-aria-activedescendant-tabindex.md).
+
 ## Examples
 
 This rule **forbids** the following:
@@ -15,7 +17,6 @@ This rule **forbids** the following:
 ```gjs
 <template>
   <div tabindex="0"></div>
-  <span tabindex="-1">text</span>
   <article tabindex="0">Story</article>
   <div role="article" tabindex="0"></div>
   <a tabindex="0">Not a link (missing href)</a>
@@ -34,6 +35,10 @@ This rule **allows** the following:
   {{! Non-interactive element with an interactive ARIA role }}
   <div role="button" tabindex="0"></div>
   <div role="checkbox" tabindex="0" aria-checked="false"></div>
+
+  {{! tabindex="-1" — focusable but not in tab order }}
+  <div tabindex="-1"></div>
+  <section tabindex="-1">scroll target</section>
 
   {{! Dynamic role — conservatively skipped }}
   <div role={{this.role}} tabindex="0"></div>
