@@ -32,9 +32,7 @@ describe('hbs flat-config acceptance', () => {
       filePath: 'app/templates/x.hbs',
     });
     expect(result.fatalErrorCount).toBe(0);
-    expect(result.messages.map((m) => m.ruleId)).toContain(
-      'ember/template-no-bare-strings'
-    );
+    expect(result.messages.map((m) => m.ruleId)).toContain('ember/template-no-bare-strings');
   });
 
   // Reproduces the "was not found by the project service" failure: a TS
@@ -90,9 +88,7 @@ describe('hbs flat-config acceptance', () => {
       filePath: 'app/templates/x.hbs',
     });
     expect(result.fatalErrorCount).toBe(0);
-    expect(result.messages.map((m) => m.ruleId)).toContain(
-      'ember/template-no-bare-strings'
-    );
+    expect(result.messages.map((m) => m.ruleId)).toContain('ember/template-no-bare-strings');
   });
 
   // Full fix: narrow the TS block's `files` so it doesn't match .hbs at
@@ -120,8 +116,6 @@ describe('hbs flat-config acceptance', () => {
       filePath: 'app/templates/x.hbs',
     });
     expect(result.fatalErrorCount).toBe(0);
-    expect(result.messages.map((m) => m.ruleId)).toEqual([
-      'ember/template-no-bare-strings',
-    ]);
+    expect(result.messages.map((m) => m.ruleId)).toEqual(['ember/template-no-bare-strings']);
   });
 });
