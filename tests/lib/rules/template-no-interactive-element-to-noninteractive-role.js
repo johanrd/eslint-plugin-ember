@@ -38,6 +38,19 @@ ruleTester.run('template-no-interactive-element-to-noninteractive-role', rule, {
 
     // <a> without href is not interactive.
     '<template><a role="heading">Not a link</a></template>',
+
+    // <canvas> is not treated as inherently interactive — authors commonly
+    // use it as an accessibility surface with role="img" or role="presentation".
+    '<template><canvas role="img">Chart</canvas></template>',
+    '<template><canvas role="presentation"></canvas></template>',
+    '<template><canvas role="none"></canvas></template>',
+
+    // <video>/<audio> without `controls` render no user-operable UI — treat
+    // as non-interactive. Decorative background media is a common pattern.
+    '<template><video role="presentation" src="/x.mp4" /></template>',
+    '<template><audio role="presentation" src="/x.mp3" /></template>',
+    '<template><video role="img" src="/x.mp4" /></template>',
+    '<template><audio role="img" src="/x.mp3" /></template>',
   ],
   invalid: [
     {
@@ -78,6 +91,18 @@ ruleTester.run('template-no-interactive-element-to-noninteractive-role', rule, {
       output: null,
       errors: [{ messageId: 'mismatch' }],
     },
+    // <video controls> / <audio controls> exposes user-operable playback UI —
+    // stripping interactive semantics with a non-interactive role is wrong.
+    {
+      code: '<template><video controls role="presentation" src="/x.mp4" /></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><audio controls role="presentation" src="/x.mp3" /></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
   ],
 });
 
@@ -92,6 +117,8 @@ hbsRuleTester.run('template-no-interactive-element-to-noninteractive-role', rule
     '<div role="article">Story</div>',
     '<button>Click</button>',
     '<CustomBtn role="article" />',
+    '<canvas role="img">Chart</canvas>',
+    '<video role="presentation" src="/x.mp4" />',
   ],
   invalid: [
     {
@@ -101,6 +128,11 @@ hbsRuleTester.run('template-no-interactive-element-to-noninteractive-role', rule
     },
     {
       code: '<a href="/x" role="banner">Link</a>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<video controls role="presentation" src="/x.mp4" />',
       output: null,
       errors: [{ messageId: 'mismatch' }],
     },
