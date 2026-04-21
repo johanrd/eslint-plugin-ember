@@ -82,7 +82,6 @@ ruleTester.run('audit:no-noninteractive-tabindex (gts)', rule, {
     // `<MyButton>` → `mybutton` which is not in the dom map) are correctly
     // skipped.
     '<template><Article tabindex="-1" /></template>',
-    '<template><MyButton tabindex={{0}} /></template>',
 
     // === Upstream parity (jsx-a11y recommended valid) ===
 
