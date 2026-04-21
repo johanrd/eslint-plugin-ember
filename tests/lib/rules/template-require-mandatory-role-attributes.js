@@ -25,6 +25,15 @@ ruleTester.run('template-require-mandatory-role-attributes', rule, {
     '<template>{{foo-component role="button"}}</template>',
     '<template>{{foo-component role="unknown"}}</template>',
     '<template>{{foo-component role=role}}</template>',
+
+    // Semantic inputs supply aria-checked natively; the role is satisfied
+    // without an explicit aria-checked attribute. Documented accessible
+    // patterns: https://www.w3.org/WAI/ARIA/apg/patterns/switch/#keyboardinteraction
+    '<template><input type="checkbox" role="switch" /></template>',
+    '<template><input type="checkbox" role="menuitemcheckbox" /></template>',
+    '<template><input type="radio" role="menuitemradio" /></template>',
+    '<template><input type="radio" role="radio" /></template>',
+    '<template><input type="checkbox" role="checkbox" /></template>',
   ],
 
   invalid: [
@@ -105,6 +114,13 @@ hbsRuleTester.run('template-require-mandatory-role-attributes', rule, {
     '{{foo-component role="button"}}',
     '{{foo-component role="unknown"}}',
     '{{foo-component role=role}}',
+
+    // Semantic inputs supply aria-checked natively.
+    '<input type="checkbox" role="switch" />',
+    '<input type="checkbox" role="menuitemcheckbox" />',
+    '<input type="radio" role="menuitemradio" />',
+    '<input type="radio" role="radio" />',
+    '<input type="checkbox" role="checkbox" />',
   ],
   invalid: [
     {

@@ -31,9 +31,15 @@ This rule **allows** the following:
   <div role="option" aria-selected="false" />
   <CustomComponent role="checkbox" aria-required="true" aria-checked="false" />
   {{some-component role="heading" aria-level="2"}}
+
+  {{! <input type="checkbox|radio"> supplies aria-checked natively for roles that require it. }}
+  <input type="checkbox" role="switch" />
+  <input type="checkbox" role="menuitemcheckbox" />
+  <input type="radio" role="menuitemradio" />
 </template>
 ```
 
 ## References
 
 - [WAI-ARIA Roles - Accessibility \_ MDN](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles)
+- [WAI-ARIA APG — Switch pattern](https://www.w3.org/WAI/ARIA/apg/patterns/switch/) (documents `<input type="checkbox" role="switch">` as an accessible switch)
