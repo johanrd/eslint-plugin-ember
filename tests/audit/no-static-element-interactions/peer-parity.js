@@ -134,19 +134,19 @@ ruleTester.run('audit:no-invalid-interactive (gts)', rule, {
     // PARITY — non-interactive escape hatches honored by peers AND by us.
     // =========================================================================
 
-    // D1 (resolved). role="presentation" / role="none" on a plain element with
-    // onClick opts out of the interactivity check.
+    // D1. role="presentation" / role="none" on a plain element with onClick
+    // opts out of the interactivity check.
     // jsx-a11y no-static: VALID. jsx-a11y no-noninteractive: VALID.
     // Vue: VALID (`<div @click='void 0' role='presentation'/>`).
-    // Our rule (post-fix): VALID — honored via `hasNonInteractiveEscapeHatch`.
+    // Our rule: VALID — honored via `hasNonInteractiveEscapeHatch`.
     '<template><div role="presentation" onclick={{this.h}}></div></template>',
     '<template><div role="presentation" onkeydown={{this.h}}></div></template>',
     '<template><div role="none" onclick={{this.h}}></div></template>',
 
-    // D2 (resolved). aria-hidden suppresses flagging (jsx-a11y + vue).
+    // D2. aria-hidden suppresses flagging (jsx-a11y + vue).
     // jsx-a11y: `<div onClick={()=>{}} aria-hidden />` VALID.
     // Vue:      `<div @click='void 0' aria-hidden='true'/>`  VALID.
-    // Our rule (post-fix): VALID — honored via `hasNonInteractiveEscapeHatch`.
+    // Our rule: VALID — honored via `hasNonInteractiveEscapeHatch`.
     '<template><div onclick={{this.h}} aria-hidden="true"></div></template>',
     '<template><div onclick={{this.h}} aria-hidden></div></template>',
     '<template><div onclick={{this.h}} aria-hidden={{true}}></div></template>',
@@ -450,9 +450,6 @@ ruleTester.run('audit:no-invalid-interactive (gts)', rule, {
     // =========================================================================
     // DIVERGENCES — peers VALID, we FLAG (false positives relative to peers)
     // =========================================================================
-
-    // D1 (role=presentation/none) and D2 (aria-hidden=true/bare) have been
-    // resolved; those cases are now in the valid block above.
 
     // D3. <section onClick aria-label="Aa" />
     // jsx-a11y no-static: VALID; jsx-a11y no-noninteractive: INVALID.
