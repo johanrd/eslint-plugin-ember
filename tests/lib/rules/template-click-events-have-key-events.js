@@ -19,6 +19,8 @@ ruleTester.run('template-click-events-have-key-events', rule, {
     '<template><a href="/x" {{on "click" this.track}}>Link</a></template>',
     '<template><input type="checkbox" {{on "click" this.toggle}} /></template>',
     '<template><summary {{on "click" this.noop}}>More</summary></template>',
+    '<template><option {{on "click" this.h}}>Foo</option></template>',
+    '<template><datalist {{on "click" this.h}}></datalist></template>',
 
     // Hidden from AT.
     '<template><div aria-hidden="true" {{on "click" this.noop}}></div></template>',
@@ -87,6 +89,8 @@ hbsRuleTester.run('template-click-events-have-key-events', rule, {
     '<div></div>',
     '<button {{on "click" this.toggle}}>Toggle</button>',
     '<a href="/x" {{on "click" this.track}}>Link</a>',
+    '<option {{on "click" this.h}}>Foo</option>',
+    '<datalist {{on "click" this.h}}></datalist>',
     '<div role="presentation" {{on "click" this.noop}}></div>',
     '<div aria-hidden="true" {{on "click" this.noop}}></div>',
     '<div {{on "click" this.onClick}} {{on "keydown" this.onKey}}></div>',

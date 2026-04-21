@@ -68,6 +68,11 @@ ruleTester.run('audit:click-events-have-key-events (gts)', rule, {
     '<template><button {{on "click" this.onClick}} class="foo"></button></template>',
     '<template><select {{on "click" this.onClick}} class="foo"></select></template>',
     '<template><textarea {{on "click" this.onClick}} class="foo"></textarea></template>',
+    // <option> / <datalist> are interactive per aria-query elementRoles
+    // (map to `option` and `listbox` widget roles respectively).
+    // jsx-a11y / vue: valid.
+    '<template><option {{on "click" this.onClick}} class="foo"></option></template>',
+    '<template><datalist {{on "click" this.onClick}}></datalist></template>',
 
     // <a> becomes interactive when it has href.
     // jsx-a11y / vue / angular / lit: valid.
@@ -102,12 +107,6 @@ ruleTester.run('audit:click-events-have-key-events (gts)', rule, {
     // Our rule: does NOT check ARIA roles for the interactive check — it only
     // looks at native HTML interactivity. So `<div role="button" {{on "click"}}>`
     // would be flagged by us. Captured below in DIVERGENCE.
-
-    // === DIVERGENCE — <option> treated as interactive by peers ===
-    // jsx-a11y: valid (`<option onClick={...} className="foo" />`).
-    // vue: valid.
-    // aria-query includes <option> in `dom`, but our INHERENTLY_INTERACTIVE_TAGS
-    // set does not — so we FLAG this. FALSE POSITIVE. See invalid block below.
 
     // === DIVERGENCE — `<input type="hidden">` treated as valid by peers ===
     // jsx-a11y / vue: valid.
@@ -196,14 +195,6 @@ ruleTester.run('audit:click-events-have-key-events (gts)', rule, {
     },
     {
       code: '<template><div {{on "click" this.onClick}} role="aside"></div></template>',
-      output: null,
-      errors: [{ messageId: 'needsKeyEvent' }],
-    },
-
-    // === DIVERGENCE — <option> flagged (peers treat as valid) ===
-    // jsx-a11y / vue: VALID. Our rule: INVALID.
-    {
-      code: '<template><option {{on "click" this.onClick}} class="foo"></option></template>',
       output: null,
       errors: [{ messageId: 'needsKeyEvent' }],
     },
@@ -304,6 +295,8 @@ hbsRuleTester.run('audit:click-events-have-key-events (hbs)', rule, {
     '<button {{on "click" this.a}}></button>',
     '<a href="/x" {{on "click" this.a}}></a>',
     '<input type="text" {{on "click" this.a}} />',
+    '<option {{on "click" this.a}}></option>',
+    '<datalist {{on "click" this.a}}></datalist>',
 
     // Presentation / none.
     '<div role="presentation" {{on "click" this.a}}></div>',
@@ -336,12 +329,6 @@ hbsRuleTester.run('audit:click-events-have-key-events (hbs)', rule, {
     // aria-hidden="false".
     {
       code: '<div aria-hidden="false" {{on "click" this.a}}></div>',
-      output: null,
-      errors: [{ messageId: 'needsKeyEvent' }],
-    },
-    // DIVERGENCE — <option> flagged (peers treat as valid).
-    {
-      code: '<option {{on "click" this.a}}></option>',
       output: null,
       errors: [{ messageId: 'needsKeyEvent' }],
     },
