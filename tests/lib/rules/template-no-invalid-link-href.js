@@ -82,11 +82,7 @@ const hbsRuleTester = new RuleTester({
 });
 
 hbsRuleTester.run('template-no-invalid-link-href', rule, {
-  valid: [
-    '<a href="/x">Link</a>',
-    '<a href={{this.url}}>Link</a>',
-    '<a>Not a link</a>',
-  ],
+  valid: ['<a href="/x">Link</a>', '<a href={{this.url}}>Link</a>', '<a>Not a link</a>'],
   invalid: [
     {
       code: '<a href="#">Click</a>',
