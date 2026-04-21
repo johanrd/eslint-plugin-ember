@@ -8,6 +8,18 @@ When an author adds `role="button"` (or any other interactive widget role) to a 
 
 This rule flags elements that carry an interactive ARIA role but have no focus affordance.
 
+## ⚠️ Divergence from peer plugins — role-gated, not handler-gated
+
+All three peer plugins implement the equivalent rule as **handler-gated** — they only flag `<div role="button">` when an interactive event handler (`onClick` / `@click` / `(click)`) is also present:
+
+- [`jsx-a11y/interactive-supports-focus`](https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/blob/main/docs/rules/interactive-supports-focus.md)
+- [`vuejs-accessibility/interactive-supports-focus`](https://github.com/vue-a11y/eslint-plugin-vuejs-accessibility/blob/main/docs/rules/interactive-supports-focus.md)
+- [`@angular-eslint/template/interactive-supports-focus`](https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin-template/docs/rules/interactive-supports-focus.md)
+
+**This rule is role-gated — it flags on role alone**, regardless of handler presence. Shapes like `<div role="button">x</div>` with no handler will flag here but not in jsx-a11y / vue-a11y / angular-eslint. That's a deliberate choice: an authored interactive role promises operability irrespective of whether the handler is wired up at the current site (the role is the public contract; the handler is an implementation detail that may move).
+
+If you want peer-parity handler-gated behavior, use [`template-no-invalid-interactive`](./template-no-invalid-interactive.md) instead (see also [#33](https://github.com/ember-cli/eslint-plugin-ember/pull/33)), which flags interactive event handlers on non-interactive hosts and honors the `role="presentation"` / `aria-hidden` escape hatches.
+
 ## Examples
 
 This rule **forbids** the following:
