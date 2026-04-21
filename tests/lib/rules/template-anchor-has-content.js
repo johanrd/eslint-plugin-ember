@@ -1,0 +1,211 @@
+const rule = require('../../../lib/rules/template-anchor-has-content');
+const RuleTester = require('eslint').RuleTester;
+
+const ruleTester = new RuleTester({
+  parser: require.resolve('ember-eslint-parser'),
+  parserOptions: { ecmaVersion: 2022, sourceType: 'module' },
+});
+
+ruleTester.run('template-anchor-has-content', rule, {
+  valid: [
+    // Text content — the baseline accessible name.
+    { filename: 'test.gjs', code: '<template><a href="/x">link text</a></template>' },
+
+    // Nested element with static text — the span's text surfaces as the name.
+    { filename: 'test.gjs', code: '<template><a href="/x"><span>inner</span></a></template>' },
+
+    // Explicit accessible-name attributes on the anchor itself.
+    { filename: 'test.gjs', code: '<template><a href="/x" aria-label="Close" /></template>' },
+    { filename: 'test.gjs', code: '<template><a href="/x" aria-labelledby="lbl" /></template>' },
+    { filename: 'test.gjs', code: '<template><a href="/x" title="Open" /></template>' },
+
+    // Dynamic accessible-name attribute — opaque, trust the author.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x" aria-label={{@label}} /></template>',
+    },
+
+    // Dynamic content — opaque at lint time, skip.
+    { filename: 'test.gjs', code: '<template><a href="/x">{{@label}}</a></template>' },
+    { filename: 'test.gjs', code: '<template><a href="/x">{{this.label}}</a></template>' },
+    { filename: 'test.gjs', code: '<template><a href="/x">{{foo.bar}}</a></template>' },
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x">{{#if ok}}Continue{{else}}Start{{/if}}</a></template>',
+    },
+
+    // <img alt="…"> contributes its alt to the accessible name.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><img alt="Search" /></a></template>',
+    },
+
+    // <img alt={{…}}> — dynamic alt, trust the author.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><img alt={{@alt}} /></a></template>',
+    },
+
+    // Component invocation (PascalCase) — not a plain HTML anchor, out of scope.
+    { filename: 'test.gjs', code: '<template><Link href="/x" /></template>' },
+
+    // Nested component child inside a plain <a> — opaque, skip.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><MyIcon /></a></template>',
+    },
+
+    // Anchor without href — out of scope (handled by template-link-href-attributes).
+    { filename: 'test.gjs', code: '<template><a /></template>' },
+    { filename: 'test.gjs', code: '<template><a>Foo</a></template>' },
+
+    // Label on a nested element (via aria-label on the child).
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><span aria-label="close icon" /></a></template>',
+    },
+  ],
+
+  invalid: [
+    // Self-closing anchor with href — no content, no accessible name.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x" /></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    // Empty anchor.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"></a></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    // Whitespace-only content.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x">   </a></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    // aria-hidden subtree contributes nothing to the accessible name.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><span aria-hidden="true">X</span></a></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><span aria-hidden>X</span></a></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    // <img aria-hidden /> — alt is not exposed when the image is hidden.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><img aria-hidden alt="Nope" /></a></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><img aria-hidden={{true}} alt="foo" /></a></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    // <img> with no alt at all — nothing to surface.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><img /></a></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    // <img alt=""> — empty alt is explicit "no accessible name".
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><img alt="" /></a></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    // Empty aria-label / aria-labelledby / title are NOT names.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x" aria-label="" /></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x" aria-labelledby="" /></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    // Nested empty element.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><span></span></a></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+  ],
+});
+
+const hbsRuleTester = new RuleTester({
+  parser: require.resolve('ember-eslint-parser/hbs'),
+  parserOptions: { ecmaVersion: 2022, sourceType: 'module' },
+});
+
+hbsRuleTester.run('template-anchor-has-content (hbs)', rule, {
+  valid: [
+    // Classic-HBS mirrors of the key valid GTS cases.
+    '<a href="/x">link text</a>',
+    '<a href="/x"><span>inner</span></a>',
+    '<a href="/x" aria-label="Close" />',
+    '<a href="/x" title="Open" />',
+    '<a href="/x">{{@label}}</a>',
+    '<a href="/x">{{this.label}}</a>',
+    '<a href="/x"><img alt="Search" /></a>',
+    '<Link href="/x" />',
+    // Anchors without href are out of scope.
+    '<a />',
+    '<a>Foo</a>',
+  ],
+  invalid: [
+    {
+      code: '<a href="/x" />',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    {
+      code: '<a href="/x"></a>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    {
+      code: '<a href="/x"><span aria-hidden>X</span></a>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    {
+      code: '<a href="/x"><img aria-hidden alt="Nope" /></a>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    {
+      code: '<a href="/x"><img aria-hidden={{true}} alt="foo" /></a>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    {
+      code: '<a href="/x" aria-label="" />',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    {
+      code: '<a href="/x">   </a>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+  ],
+});
