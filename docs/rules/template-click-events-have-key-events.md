@@ -9,7 +9,7 @@ When a `{{on "click" …}}` modifier is attached to a non-interactive DOM elemen
 This rule is complementary to [`ember/template-no-invalid-interactive`](./template-no-invalid-interactive.md):
 
 - `template-no-invalid-interactive` takes a stricter stance: don't use DOM event modifiers on non-interactive elements at all. Steers authors toward native interactive elements.
-- `template-click-events-have-key-events` is permissive: if you *do* use `{{on "click" …}}` on a non-interactive element, at least pair it with a keyboard listener.
+- `template-click-events-have-key-events` is permissive: if you _do_ use `{{on "click" …}}` on a non-interactive element, at least pair it with a keyboard listener.
 
 Enable one, the other, or both depending on your project's stance.
 
