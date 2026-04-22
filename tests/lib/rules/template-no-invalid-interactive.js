@@ -234,7 +234,7 @@ ruleTester.run('template-no-invalid-interactive', rule, {
       ],
     },
     {
-      // Explicit `aria-hidden="false"` is the unambiguous opt-out — still flags.
+      // aria-hidden="false" is opt-in to exposure — rule still flags non-interactive + handler.
       code: '<template><div aria-hidden="false" onclick={{this.h}}></div></template>',
       output: null,
       errors: [{ messageId: 'noInvalidInteractive' }],

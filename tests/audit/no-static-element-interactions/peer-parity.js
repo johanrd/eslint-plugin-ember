@@ -1,13 +1,17 @@
-// Audit fixture — peer-plugin parity for `ember/template-no-invalid-interactive`.
+// Audit fixture — translates peer-plugin test cases into assertions against
+// our rule. Runs as part of the default Vitest suite (via the `tests/**/*.js`
+// include glob) and serves double-duty: (1) auditable record of peer-parity
+// divergences, (2) regression coverage pinning CURRENT behavior. Each case
+// encodes what OUR rule does today; divergences from upstream plugins are
+// annotated as `DIVERGENCE —`. Peer-only constructs that can't be translated
+// to Ember templates (JSX spread props, Vue v-bind, Angular `$event`,
+// undefined-handler expression analysis) are marked `AUDIT-SKIP`.
 //
-// Our rule covers the combined concerns of TWO jsx-a11y rules:
+// Our rule (`ember/template-no-invalid-interactive`) covers the combined
+// concerns of TWO jsx-a11y rules:
 //   - `no-static-element-interactions`        (div/span/etc. + onClick, no role)
 //   - `no-noninteractive-element-interactions` (article/p/main/etc. + onClick)
 // plus the single vue rule `no-static-element-interactions`.
-//
-// This file does NOT run in CI; it encodes CURRENT behavior of our rule so
-// that executing it reports pass. Each case is annotated with the peer rule
-// it was translated from and any divergence.
 //
 // Source files (context/ checkouts):
 //   - eslint-plugin-jsx-a11y-main/__tests__/src/rules/no-static-element-interactions-test.js
@@ -117,9 +121,10 @@ ruleTester.run('audit:no-invalid-interactive (gts)', rule, {
     '<template><img onerror={{this.h}} alt="x" /></template>',
 
     // <form onSubmit> — parity as above.
-    // <iframe onLoad> — jsx-a11y no-noninteractive: alwaysValid.
-    // DIVERGENCE (noted in invalid section): our rule does NOT allow onload on iframe;
-    // ELEMENT_ALLOWED_EVENTS only covers form + img. See invalid-section cross-ref.
+    // <iframe onLoad> — jsx-a11y no-noninteractive: alwaysValid. PARITY.
+    // Ours: `iframe` is in NATIVE_INTERACTIVE_ELEMENTS, so isInteractive()
+    // returns true and the rule early-returns. See invalid-section cross-ref
+    // at line 517 for the full parity assertion.
 
     // =========================================================================
     // Bucket C — vue/no-static-element-interactions (valid)
