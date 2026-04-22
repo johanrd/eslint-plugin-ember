@@ -30,6 +30,22 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     '<template><div role="tab" tabindex="0"></div></template>',
     '<template><div role="menuitem" tabindex="-1"></div></template>',
 
+    // `role="tabpanel"` is in the default allowlist — WAI-ARIA APG Tabs
+    // pattern gives panels tabindex="0" when their content isn't itself
+    // focusable, so keyboard users can page through panels. jsx-a11y
+    // exempts `tabpanel` for the same reason.
+    '<template><div role="tabpanel" tabindex="0"></div></template>',
+    '<template><section role="tabpanel" tabindex="0" aria-labelledby="tab-1">Content</section></template>',
+
+    // Config: allow additional non-interactive roles.
+    {
+      code: '<template><div role="region" tabindex="0" aria-label="Scroll area"></div></template>',
+      options: [{ roles: ['tabpanel', 'region'] }],
+    },
+    // Config: narrow the allowlist (drop `tabpanel` default).
+    // Default-behavior case above is not affected by this narrower config
+    // because user-provided `roles` replaces the default.
+
     // Components and custom elements — rule skips.
     '<template><CustomWidget tabindex="0" /></template>',
     '<template><my-widget tabindex="0"></my-widget></template>',
@@ -79,6 +95,14 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     },
     {
       code: '<template><div role="heading" tabindex="0"></div></template>',
+      output: null,
+      errors: [{ messageId: 'noNonInteractiveTabindex' }],
+    },
+    // Config: narrow `roles` allowlist — user-provided empty array overrides
+    // the default so `role="tabpanel"` is no longer exempted.
+    {
+      code: '<template><div role="tabpanel" tabindex="0"></div></template>',
+      options: [{ roles: [] }],
       output: null,
       errors: [{ messageId: 'noNonInteractiveTabindex' }],
     },

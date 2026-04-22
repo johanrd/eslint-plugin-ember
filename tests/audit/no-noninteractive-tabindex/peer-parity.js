@@ -76,21 +76,15 @@ ruleTester.run('audit:no-noninteractive-tabindex (gts)', rule, {
 
     // jsx-a11y recommended: `tabpanel` whitelisted via `roles` option → valid.
     // jsx-a11y strict: `tabpanel` flagged (it's not an interactive role).
-    // Our rule has no options and treats `tabpanel` as non-interactive per
-    // aria-query's role graph. See the invalid section for the strict-side
-    // assertion.
+    // Our rule defaults to `roles: ['tabpanel']` matching jsx-a11y
+    // recommended — the APG Tabs pattern gives panels tabindex="0" when
+    // their content isn't itself focusable.
+    '<template><div role="tabpanel" tabindex="0"></div></template>',
 
     // jsx-a11y recommended: dynamic role expressions pass because
     // `allowExpressionValues: true`. Our rule conservatively skips dynamic
     // roles too. Parity with recommended config.
     '<template><div role={{this.role}} tabindex="0"></div></template>',
-
-    // === DIVERGENCE — tabpanel tabindex classification ===
-    // jsx-a11y recommended: `<div role="tabpanel" tabindex="0" />` VALID
-    //   (tabpanel is in the recommended `roles` whitelist).
-    // jsx-a11y strict: INVALID.
-    // Our rule: INVALID (tabpanel is not in INTERACTIVE_ROLES). We match
-    // jsx-a11y strict, diverge from recommended. Captured in invalid section.
   ],
 
   invalid: [
@@ -124,12 +118,13 @@ ruleTester.run('audit:no-noninteractive-tabindex (gts)', rule, {
       errors: [{ messageId: 'noNonInteractiveTabindex' }],
     },
 
-    // === DIVERGENCE — tabpanel in strict mode ===
-    // jsx-a11y strict: INVALID (tabpanel not interactive).
-    // jsx-a11y recommended: VALID (`roles: ['tabpanel']` whitelist).
-    // Our rule: INVALID. Matches jsx-a11y strict, diverges from recommended.
+    // === OPT-IN strict mode — user narrows the roles allowlist ===
+    // jsx-a11y strict: `<div role="tabpanel" tabindex="0" />` INVALID.
+    // Users who want strict behavior pass `roles: []` to override the
+    // default `['tabpanel']`.
     {
       code: '<template><div role="tabpanel" tabindex="0"></div></template>',
+      options: [{ roles: [] }],
       output: null,
       errors: [{ messageId: 'noNonInteractiveTabindex' }],
     },
@@ -172,6 +167,8 @@ hbsRuleTester.run('audit:no-noninteractive-tabindex (hbs)', rule, {
     // (e.g. `<Article>` → `article`).
     '<MyButton tabindex="0" />',
     '<Article tabindex="0"></Article>',
+    // role="tabpanel" — default allowlist matches jsx-a11y recommended.
+    '<div role="tabpanel" tabindex="0"></div>',
   ],
   invalid: [
     // Parity — neverValid cases in hbs form.
@@ -190,9 +187,11 @@ hbsRuleTester.run('audit:no-noninteractive-tabindex (hbs)', rule, {
       output: null,
       errors: [{ messageId: 'noNonInteractiveTabindex' }],
     },
-    // DIVERGENCE — tabpanel strict-mode classification (see gts section).
+    // OPT-IN strict mode — empty `roles` config overrides the default
+    // `['tabpanel']`, matching jsx-a11y strict.
     {
       code: '<div role="tabpanel" tabindex="0"></div>',
+      options: [{ roles: [] }],
       output: null,
       errors: [{ messageId: 'noNonInteractiveTabindex' }],
     },

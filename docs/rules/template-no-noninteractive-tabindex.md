@@ -42,8 +42,19 @@ This rule **allows** the following:
 
   {{! Dynamic role — conservatively skipped }}
   <div role={{this.role}} tabindex="0"></div>
+
+  {{! role="tabpanel" — default allowlist (see Options) }}
+  <div role="tabpanel" tabindex="0" aria-labelledby="tab-1">Panel</div>
 </template>
 ```
+
+## Options
+
+- `roles` (default `["tabpanel"]`) — non-interactive ARIA roles exempted from this rule. Elements carrying one of these roles may have `tabindex` without triggering a flag.
+
+  The default value (`["tabpanel"]`) matches jsx-a11y's recommended config. The [WAI-ARIA APG Tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/) gives panels `tabindex="0"` when the panel's content isn't itself focusable, so keyboard users can page through panels. Flagging tabpanel-with-tabindex as a violation would break the canonical Tabs pattern.
+
+  Use an empty array (`roles: []`) to disable the default exemption — matching jsx-a11y's strict config. Use a wider list (e.g. `roles: ["tabpanel", "region"]`) to exempt additional roles where your project uses `tabindex` legitimately (scrollable regions, etc.).
 
 ## References
 
