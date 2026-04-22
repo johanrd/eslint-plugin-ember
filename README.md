@@ -469,6 +469,7 @@ To disable a rule for an entire `.gjs`/`.gts` file, use a regular ESLint file-le
 | [template-no-shadowed-elements](docs/rules/template-no-shadowed-elements.md)                                               | disallow ambiguity with block param names shadowing HTML elements | 📋 |    |    |
 | [template-no-unbalanced-curlies](docs/rules/template-no-unbalanced-curlies.md)                                             | disallow unbalanced mustache curlies                              | 📋 |    |    |
 | [template-no-unknown-arguments-for-builtin-components](docs/rules/template-no-unknown-arguments-for-builtin-components.md) | disallow unknown arguments for built-in components                | 📋 | 🔧 |    |
+| [template-valid-autocomplete](docs/rules/template-valid-autocomplete.md)                                                   | validate autocomplete attribute values against the HTML spec      |    |    |    |
 
 ### Routes
 
