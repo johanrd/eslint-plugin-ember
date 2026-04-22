@@ -2,60 +2,66 @@
 
 <!-- end auto-generated rule header -->
 
-This rule disallows `aria-label` and `aria-labelledby` on elements that
-cannot be named in the accessibility tree. On a plain `<div>` or `<span>`
-without a `role`, these attributes are ignored by assistive technology —
-the label is silent.
+Flag `aria-label` and `aria-labelledby` on elements whose computed role
+prohibits an accessible name from author. On a plain `<div>` the role is
+`generic`, whose [`prohibitedProps` per WAI-ARIA 1.2](https://www.w3.org/TR/wai-aria-1.2/#generic)
+list both `aria-label` and `aria-labelledby` — assistive technology is
+expected to ignore them.
 
-## Valid carriers
+## How the role is resolved
 
-`aria-label` / `aria-labelledby` are valid on:
+Roles are looked up via [`aria-query`](https://www.npmjs.com/package/aria-query),
+the authoritative WAI-ARIA data package:
 
-- **Interactive elements**: `<button>`, `<a href>`, `<input>` (not hidden),
-  `<select>`, `<textarea>`, `<details>`, `<summary>`, `<audio controls>`,
-  `<video controls>`, `<iframe>`, `<embed>`, `<img usemap>`, `<label>`.
-- **Labelable elements**: `<button>`, `<input>` (not hidden), `<meter>`,
-  `<output>`, `<progress>`, `<select>`, `<textarea>`.
-- **Landmarks / content grouping**: `<main>`, `<nav>`, `<aside>`,
-  `<header>`, `<footer>`, `<section>`, `<article>`, `<form>`, `<dialog>`,
-  `<figure>`, `<fieldset>`, `<table>`, `<td>`, `<th>`, `<img>`, `<area>`,
-  `<iframe>`, `<summary>`.
-- **Any element that declares an explicit `role` or `tabindex`** (the
-  author has opted into the accessibility tree).
+- **Explicit**: if the element has a static `role="..."`, that role is used.
+  `role="presentation"` and `role="none"` cause the element to be skipped
+  (author has removed it from the a11y tree).
+- **Implicit**: `aria-query.elementRoles` gives the spec-mapped role for
+  each HTML tag. Conditional entries (e.g. `<section aria-label="...">`
+  maps to `region`, `<a href>` maps to `link`) are matched against the
+  element's static attributes; the most specific match wins.
+
+If no role can be resolved (unknown tag, component invocation, or
+element without an aria-query entry), the rule skips — consistent with
+the plugin's "when in doubt, don't flag" stance.
+
+## Escape hatches (not flagged)
+
+- Elements with `tabindex` (any value). Real screen readers (NVDA, JAWS,
+  VoiceOver) read `aria-label` on a tabindexed generic element in
+  practice, so flagging would be a false positive even though the
+  spec-role is still `generic`.
+- Elements with `role="presentation"` / `role="none"`.
+- Elements whose role is inherently nameable (e.g. `button`, `link`,
+  `main`, `navigation`, `region`).
 
 ## Examples
 
-This rule **forbids** the following:
+Forbids:
 
 ```hbs
 <div aria-label='dialog'>...</div>
 <span aria-labelledby='title'>...</span>
 <p aria-label='note'>Note text</p>
+<a aria-label='missing-href'>...</a>
+<img aria-label='x' alt='' src='/y.png' />
 ```
 
-This rule **allows** the following:
+Allows:
 
 ```hbs
-<button aria-label='Close'>×</button>
+<button aria-label='Close'>x</button>
 <main aria-label='Primary'>...</main>
+<section aria-label='About'>...</section>     {{! becomes role=region }}
+<form aria-label='Search'>...</form>           {{! becomes role=form }}
 <div role='button' aria-label='Custom'>...</div>
 <span tabindex='0' aria-label='Focusable'>...</span>
 ```
 
-Component invocations (`<MyDialog>`, `<AcmeButton>`) are skipped — the
-rendered element/role isn't knowable at lint time.
-
-## Limitations
-
-- This rule doesn't check element metadata with full MDN-level accuracy.
-  It uses a hand-coded subset of the HTML spec's interactive and
-  labelable categories, plus an explicit allowlist for common landmarks.
-- Dynamic attribute values (`aria-label={{this.label}}`) are treated as
-  intent-to-label; the attribute presence alone is enough to check against
-  the element's nameable-ness.
-
 ## References
 
 - [WAI-ARIA 1.2: Accessible Name Calculation](https://www.w3.org/TR/wai-aria-1.2/#namecalculation)
-- [HTML Accessibility API Mappings: aria-label](https://www.w3.org/TR/html-aam-1.0/#html-attribute-state-and-property-mappings)
-- Adapted from [`html-validate`'s `aria-label-misuse`](https://html-validate.org/rules/aria-label-misuse.html) (MIT).
+- [WAI-ARIA 1.2: `aria-label` property definition](https://www.w3.org/TR/wai-aria-1.2/#aria-label)
+- [HTML-AAM: ARIA role mappings](https://www.w3.org/TR/html-aam-1.1/#html-element-role-mappings)
+- [`aria-query`](https://www.npmjs.com/package/aria-query) (authoritative ARIA data, already a dep of this plugin)
+- Rule inspired by [`html-validate`'s `aria-label-misuse`](https://gitlab.com/html-validate/html-validate/-/blob/v10.13.1/src/rules/aria-label-misuse.ts) (MIT).

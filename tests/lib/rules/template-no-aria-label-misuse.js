@@ -1,78 +1,70 @@
 const rule = require('../../../lib/rules/template-no-aria-label-misuse');
 const RuleTester = require('eslint').RuleTester;
 
-const err = (attr, tag) =>
-  `\`${attr}\` cannot be used on \`<${tag}>\` without an interactive role, tabindex, or role attribute`;
+const err = (attr, tag, role) =>
+  `\`${attr}\` is prohibited on \`<${tag}>\` (role \`${role}\`). Elements with this role are not named from author; the attribute is ignored by assistive tech.`;
 
 const validHbs = [
-  // Interactive elements.
   '<button aria-label="Close">x</button>',
   '<select aria-label="c"><option>a</option></select>',
   '<textarea aria-label="t"></textarea>',
   '<input aria-label="i" type="text" />',
   '<a href="/x" aria-label="Go">link</a>',
-  '<audio controls aria-label="track"></audio>',
-  '<video controls aria-label="clip"></video>',
-  // Landmark / allowlist.
   '<main aria-label="Primary"></main>',
   '<nav aria-label="Breadcrumb"></nav>',
-  '<section aria-label="About"></section>',
   '<dialog aria-label="Confirm"></dialog>',
-  '<form aria-label="Search"></form>',
   '<iframe aria-label="Embed" src="/x"></iframe>',
-  '<img aria-label="Image" src="/x.png" alt="" />',
-  '<figure aria-label="Illustration"></figure>',
-  '<table aria-label="Data"></table>',
-  '<td aria-label="Cell"></td>',
-  // Role or tabindex.
   '<div role="button" aria-label="Custom">x</div>',
-  '<span tabindex="0" aria-label="Focusable">x</span>',
   '<div role="dialog" aria-labelledby="title">x</div>',
-  // No aria-label/labelledby at all.
+  '<div role="navigation" aria-label="Main nav"></div>',
+  // role="presentation" / "none" — author opted out; nothing to lint.
+  '<div role="presentation" aria-label="decoration">x</div>',
+  '<span role="none" aria-label="decoration">x</span>',
+  // Tabindex escape hatch: real screen readers read aria-label on a
+  // tabindexed element even when the implicit role is generic.
+  '<span tabindex="0" aria-label="Focusable">x</span>',
+  '<div tabindex="-1" aria-label="x">x</div>',
+  // No aria-label/labelledby.
   '<div>plain</div>',
   '<span>text</span>',
-  // Empty aria-label — treat as no label.
   '<div aria-label=""></div>',
-  // Ember component — skip.
+  // Ember component — skipped (role unknowable).
   '<MyButton aria-label="x" />',
-  // Labelable <output>, <meter>, <progress>.
-  '<output aria-label="r"></output>',
-  '<meter aria-label="m"></meter>',
-  '<progress aria-label="p"></progress>',
+  // Elements with no aria-query entry — skipped ("when in doubt, don't flag").
+  '<audio aria-label="silent"></audio>',
+  '<input type="hidden" aria-label="x" />',
+  // <section> transitions to role=region when aria-label is present.
+  '<section aria-label="About"></section>',
+  // <form> transitions to role=form when aria-label is present.
+  '<form aria-label="Search"></form>',
 ];
 
 const invalidHbs = [
   {
     code: '<div aria-label="dialog">x</div>',
-    errors: [{ message: err('aria-label', 'div') }],
+    errors: [{ message: err('aria-label', 'div', 'generic') }],
   },
   {
     code: '<span aria-labelledby="title">x</span>',
-    errors: [{ message: err('aria-labelledby', 'span') }],
+    errors: [{ message: err('aria-labelledby', 'span', 'generic') }],
   },
   {
     code: '<p aria-label="note">text</p>',
-    errors: [{ message: err('aria-label', 'p') }],
+    errors: [{ message: err('aria-label', 'p', 'paragraph') }],
   },
-  // Link without href is not interactive.
   {
     code: '<a aria-label="missing">x</a>',
-    errors: [{ message: err('aria-label', 'a') }],
+    errors: [{ message: err('aria-label', 'a', 'generic') }],
   },
-  // audio/video without controls is not interactive.
-  {
-    code: '<audio aria-label="silent"></audio>',
-    errors: [{ message: err('aria-label', 'audio') }],
-  },
-  // hidden input is not labelable.
-  {
-    code: '<input type="hidden" aria-label="x" />',
-    errors: [{ message: err('aria-label', 'input') }],
-  },
-  // Dynamic aria-label on plain div — still flagged.
   {
     code: '<div aria-label={{this.label}}>x</div>',
-    errors: [{ message: err('aria-label', 'div') }],
+    errors: [{ message: err('aria-label', 'div', 'generic') }],
+  },
+  // <img alt=""> is role=presentation per ARIA; aria-label contradicts the
+  // "decorative" hint and is prohibited.
+  {
+    code: '<img aria-label="x" alt="" src="/y.png" />',
+    errors: [{ message: err('aria-label', 'img', 'presentation') }],
   },
 ];
 
