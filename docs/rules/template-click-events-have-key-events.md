@@ -2,7 +2,7 @@
 
 <!-- end auto-generated rule header -->
 
-Enforce a clickable non-interactive element has at least one keyboard event listener.
+Enforce that a clickable non-interactive element has at least one keyboard event listener.
 
 When a `{{on "click" …}}` modifier is attached to a non-interactive DOM element (e.g. `<div>`, `<span>`, `<a>` without `href`), keyboard-only users can't reach the handler through the keyboard path alone. Adding `{{on "keydown" …}}`, `{{on "keyup" …}}`, or `{{on "keypress" …}}` — along with appropriate `role`/`tabindex` to make the element focusable — restores keyboard parity.
 
