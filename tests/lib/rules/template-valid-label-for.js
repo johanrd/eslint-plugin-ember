@@ -25,6 +25,11 @@ const validHbs = [
   '<label for="x">Missing</label>',
   // Target is hidden input — should flag per HTML spec (hidden isn't labelable),
   // but this case is already covered in invalid tests below.
+  // Multi-labelable-children: `for` targets a non-first descendant. This is
+  // an explicit override of the implicit-containment rule (HTML §4.10.4),
+  // not redundant.
+  '<label for="second"><input id="first" /><input id="second" /></label>',
+  '<label for="pick"><input id="a" /><select id="pick"><option>x</option></select></label>',
 ];
 
 const invalidHbs = [
@@ -50,6 +55,25 @@ const invalidHbs = [
   {
     code: '<label for="n">Name<br /><input id="n" /></label>',
     errors: [{ message: errRedundant('n') }],
+  },
+  // Redundant-for with a single labelable descendant — the `for` target IS
+  // the implicit first labelable descendant.
+  {
+    code: '<label for="pw"><span>Password</span><input id="pw" type="password" /></label>',
+    errors: [{ message: errRedundant('pw') }],
+  },
+  // Scope limitation: Ember `<Input>` / `<Textarea>` components are tagged
+  // as components, not native HTML, so this rule treats them as not
+  // labelable. Authors relying on these must suppress on a case-by-case
+  // basis. Documented in the rule doc; captured here so the behavior is
+  // locked down and any future change is intentional.
+  {
+    code: '<label for="email">Email</label><Input id="email" />',
+    errors: [{ message: errNotLabelable('email') }],
+  },
+  {
+    code: '<label for="bio">Bio</label><Textarea id="bio" />',
+    errors: [{ message: errNotLabelable('bio') }],
   },
 ];
 

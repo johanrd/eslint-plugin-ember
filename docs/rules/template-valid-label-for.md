@@ -51,6 +51,13 @@ This rule **allows** the following:
   component or a partial) can't be validated and are silently ignored.
 - Multiple occurrences of the same `id` are tracked as the first one seen;
   `template-no-duplicate-id` handles the duplicate case separately.
+- **Scope:** this rule operates on native HTML labelable controls only.
+  Ember's `<Input>` / `<Textarea>` components that render to `<input>` /
+  `<textarea>` at runtime are not tracked — resolving a component's
+  rendered tag requires component-resolution, which this rule does not
+  perform. If you rely on those, either rewrite to native controls so
+  the rule can see them, or suppress on a case-by-case basis with a
+  disable-line comment.
 
 ## References
 
