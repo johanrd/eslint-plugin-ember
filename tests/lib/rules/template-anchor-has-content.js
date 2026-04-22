@@ -79,6 +79,41 @@ ruleTester.run('template-anchor-has-content', rule, {
       filename: 'test.gjs',
       code: '<template><a href="/x"><img aria-hidden alt="Nope" /></a></template>',
     },
+
+    // Anchor itself hidden via HTML `hidden` boolean attribute — element is
+    // not rendered, so "accessible name of an anchor" is moot.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x" hidden /></template>',
+    },
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x" hidden></a></template>',
+    },
+
+    // Anchor itself hidden via aria-hidden="true" — removed from the a11y
+    // tree, so the accessible-name check does not apply.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x" aria-hidden="true" /></template>',
+    },
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x" aria-hidden={{true}}></a></template>',
+    },
+
+    // Scope-shadowed lowercase `a` (local binding in GJS) — not the native
+    // HTML anchor, so the rule does not validate it. `isNativeElement`
+    // detects the shadowing via scope reference tracking.
+    {
+      filename: 'test.gjs',
+      code: `
+        const a = '';
+        <template>
+          <a href="/x" />
+        </template>
+      `,
+    },
   ],
 
   invalid: [

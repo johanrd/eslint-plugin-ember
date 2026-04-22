@@ -41,8 +41,8 @@ This rule **forbids** the following:
   <a href="/x" />
   <a href="/x"></a>
   <a href="/x">   </a>
-  <a href="/x"><span aria-hidden>X</span></a>
-  <a href="/x"><img aria-hidden alt="Search" /></a>
+  <a href="/x"><span aria-hidden="true">X</span></a>
+  <a href="/x"><img aria-hidden="true" alt="Search" /></a>
   <a href="/x"><img /></a>
   <a href="/x" aria-label="" />
 </template>
