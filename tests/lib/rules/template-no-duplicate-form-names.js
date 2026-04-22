@@ -12,8 +12,13 @@ const validHbs = [
   // Submit buttons can share a name.
   '<form><button type="submit" name="a" value="save">S</button><button type="submit" name="a" value="p">P</button></form>',
   '<form><input type="submit" name="act" /><input type="submit" name="act" /></form>',
-  // Reset / button types allowed to share too.
+  // Non-submitting types (button, reset) don't contribute to form data; their
+  // `name` is skipped entirely, so any combination is fine.
   '<form><button type="reset" name="r">1</button><button type="reset" name="r">2</button></form>',
+  '<form><input type="button" name="x" /><input type="button" name="x" /></form>',
+  '<form><input type="button" name="x" /><input type="text" name="x" /></form>',
+  '<form><button type="button" name="x">1</button><input type="text" name="x" /></form>',
+  '<form><input type="reset" name="x" /><input type="text" name="x" /></form>',
   // Dynamic name — skip.
   '<form><input name={{this.fieldName}} /><input name="email" /></form>',
   // Same name but in different forms — fine.

@@ -6,10 +6,22 @@ This rule disallows two form controls sharing the same `name` attribute
 within the same `<form>` (or within the template root, if no `<form>`
 wraps the controls).
 
-Duplicate names break form serialization: only one value survives into
-the submitted payload, and which one survives depends on the browser.
-The common legitimate exception is a radio group — which is why radio,
-submit, reset, and `<button>` types are allowed to share names.
+Duplicate names break form serialization: both values are emitted into
+the entry list, and server-side code that expects a single value typically
+reads only one — often not the one the author intended.
+
+Two categories are exempt from the duplicate check:
+
+- **Non-submitting controls** (`<input type="button">`, `<input type="reset">`,
+  `<button type="button">`, `<button type="reset">`) are skipped entirely.
+  Per [HTML §4.10.21.4](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constructing-the-form-data-set)
+  they do not contribute to the form data, so their `name` can't collide
+  with anything.
+- **Activation-only groups** (`<input type="radio">`, `<input type="submit">`,
+  `<button type="submit">`) may share a `name` with same-type siblings.
+  A radio group uses the shared name to denote mutual exclusion; multiple
+  submit buttons with the same name distinguish which one the user activated
+  by `value`.
 
 ## Examples
 
