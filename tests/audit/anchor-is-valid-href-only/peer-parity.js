@@ -1,17 +1,20 @@
-// Audit fixture — translated test cases from peer plugins to measure
-// behavioral parity of `ember/template-no-invalid-link-href` against the
-// `invalidHref` aspect of jsx-a11y/anchor-is-valid and lit-a11y/anchor-is-valid.
+// Audit fixture — translates peer-plugin test cases into assertions against
+// our rule. Runs as part of the default Vitest suite (via the `tests/**/*.js`
+// include glob) and serves double-duty: (1) auditable record of peer-parity
+// divergences, (2) regression coverage pinning CURRENT behavior. Each case
+// encodes what OUR rule does today; divergences from upstream plugins are
+// annotated as `DIVERGENCE —`. Peer-only constructs that can't be translated
+// to Ember templates (JSX spread props, Vue v-bind, Angular `$event`,
+// undefined-handler expression analysis) are marked `AUDIT-SKIP`.
+//
+// Peers covered: the `invalidHref` aspect of jsx-a11y/anchor-is-valid and
+// lit-a11y/anchor-is-valid.
 //
 // SCOPE — `invalidHref` aspect ONLY. The upstream jsx-a11y rule has three
 // aspects: `noHref` (missing href), `invalidHref` (placeholder/js-protocol),
 // and `preferButton` (anchor used with onClick instead of navigation). We only
 // port the `invalidHref` aspect; `noHref` and `preferButton` are out of scope
 // for this rule (and for this fixture).
-//
-// These tests are NOT part of the main suite's contract and do not run in CI
-// as a parity gate. They encode the CURRENT behavior of our rule so that
-// running this file reports pass. Each divergence from an upstream plugin is
-// annotated as "DIVERGENCE —".
 //
 // Source files (context/ checkouts):
 //   - eslint-plugin-jsx-a11y-main/__tests__/src/rules/anchor-is-valid-test.js
