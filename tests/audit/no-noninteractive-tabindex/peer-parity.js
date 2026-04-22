@@ -124,8 +124,8 @@ ruleTester.run('audit:no-noninteractive-tabindex (gts)', rule, {
     // default `['tabpanel']`.
     {
       code: '<template><div role="tabpanel" tabindex="0"></div></template>',
-      options: [{ roles: [] }],
       output: null,
+      options: [{ roles: [] }],
       errors: [{ messageId: 'noNonInteractiveTabindex' }],
     },
 
@@ -191,8 +191,8 @@ hbsRuleTester.run('audit:no-noninteractive-tabindex (hbs)', rule, {
     // `['tabpanel']`, matching jsx-a11y strict.
     {
       code: '<div role="tabpanel" tabindex="0"></div>',
-      options: [{ roles: [] }],
       output: null,
+      options: [{ roles: [] }],
       errors: [{ messageId: 'noNonInteractiveTabindex' }],
     },
   ],

@@ -102,8 +102,8 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     // the default so `role="tabpanel"` is no longer exempted.
     {
       code: '<template><div role="tabpanel" tabindex="0"></div></template>',
-      options: [{ roles: [] }],
       output: null,
+      options: [{ roles: [] }],
       errors: [{ messageId: 'noNonInteractiveTabindex' }],
     },
     // <a> without href isn't interactive.
