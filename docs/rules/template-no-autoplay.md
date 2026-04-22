@@ -2,12 +2,18 @@
 
 <!-- end auto-generated rule header -->
 
-This rule disallows the `autoplay` attribute on `<audio>` and `<video>` elements.
+This rule disallows the `autoplay` attribute on `<audio>` elements, and on
+`<video>` elements that are not also marked `muted`.
 
-Autoplaying media is disruptive for users with cognitive or sensory sensitivities,
-can interfere with screen readers, and consumes bandwidth without user consent.
-WCAG Success Criterion 1.4.2 requires users to be able to pause, stop, or control
-audio that plays automatically for more than three seconds.
+Autoplaying audio is disruptive for users with cognitive or sensory
+sensitivities, can interfere with screen readers, and consumes bandwidth
+without user consent. WCAG Success Criterion 1.4.2 requires users to be able
+to pause, stop, or control audio that plays automatically for more than three
+seconds. The [W3C ACT rule `aaa1bf`][act-aaa1bf] that operationalizes SC 1.4.2
+is explicitly inapplicable when the media is muted or has no audio, so a
+muted autoplaying `<video>` (e.g. GIF-style hero) is treated as allowed.
+
+[act-aaa1bf]: https://www.w3.org/WAI/standards-guidelines/act/rules/aaa1bf/proposed/
 
 ## Examples
 
@@ -16,6 +22,8 @@ This rule **forbids** the following:
 ```hbs
 <audio src='track.mp3' autoplay></audio>
 <video src='clip.mp4' autoplay></video>
+<audio src='track.mp3' autoplay muted></audio>
+<video src='clip.mp4' autoplay muted={{false}}></video>
 ```
 
 This rule **allows** the following:
@@ -24,10 +32,14 @@ This rule **allows** the following:
 <audio src='track.mp3' controls></audio>
 <video src='clip.mp4' controls></video>
 <audio src='track.mp3' autoplay={{false}}></audio>
+<video src='clip.mp4' autoplay muted></video>
+<video src='clip.mp4' autoplay muted loop playsinline></video>
 ```
 
-Dynamic values such as `autoplay={{this.shouldAutoplay}}` are not flagged at
-lint time — the lint pass can't know the runtime value.
+Dynamic values such as `autoplay={{this.shouldAutoplay}}` or
+`muted={{this.isMuted}}` are not flagged at lint time — the lint pass can't
+know the runtime value, and false positives are considered worse than false
+negatives here.
 
 ## Configuration
 

@@ -15,6 +15,14 @@ const validHbs = [
   '<audio autoplay={{"false"}}></audio>',
   // PascalCase component — not an HTML element
   '<AutoPlayer autoplay />',
+  // <video muted autoplay> is out of WCAG SC 1.4.2 scope (ACT rule aaa1bf).
+  '<video autoplay muted></video>',
+  '<video autoplay muted loop playsinline></video>',
+  '<video autoplay muted=""></video>',
+  '<video autoplay muted="muted"></video>',
+  '<video autoplay muted={{true}}></video>',
+  // Unknown mustache for `muted` → skip (false positives > false negatives).
+  '<video autoplay muted={{this.isMuted}}></video>',
 ];
 
 const invalidHbs = [
@@ -23,6 +31,11 @@ const invalidHbs = [
   { code: '<audio autoplay=""></audio>', errors: [{ message: ERROR_AUDIO }] },
   { code: '<audio autoplay="autoplay"></audio>', errors: [{ message: ERROR_AUDIO }] },
   { code: '<video autoplay={{true}}></video>', errors: [{ message: ERROR_VIDEO }] },
+  // muted exception is <video>-only: <audio muted autoplay> is still flagged.
+  { code: '<audio autoplay muted></audio>', errors: [{ message: ERROR_AUDIO }] },
+  // muted present but statically falsy — autoplay still flagged on <video>.
+  { code: '<video autoplay muted={{false}}></video>', errors: [{ message: ERROR_VIDEO }] },
+  { code: '<video autoplay muted={{"false"}}></video>', errors: [{ message: ERROR_VIDEO }] },
 ];
 
 const additionalElementsValid = [
