@@ -21,6 +21,11 @@ const validHbs = [
   '<input pattern="\\d+" />',
   // Not an input — rule doesn't apply.
   '<textarea maxlength="10"></textarea>',
+  // Empty/whitespace/unknown type values fall back to the Text state per HTML
+  // spec, so `pattern` (allowed on text) is valid.
+  '<input type="" pattern="x" />',
+  '<input type=" TEXT " pattern="x" />',
+  '<input type="UNKNOWN" pattern="x" />',
 ];
 
 const invalidHbs = [
