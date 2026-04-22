@@ -24,9 +24,6 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     '<template><audio controls tabindex="0"></audio></template>',
     '<template><video controls tabindex="0"></video></template>',
 
-    // <object> is a widget per axobject-query — allow tabindex.
-    '<template><object tabindex="0"></object></template>',
-
     // Non-interactive element made interactive via role.
     '<template><div role="button" tabindex="0"></div></template>',
     '<template><div role="checkbox" tabindex="0" aria-checked="false"></div></template>',

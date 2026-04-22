@@ -101,8 +101,8 @@ describe('isNativeInteractive', () => {
   });
 
   describe('<object>', () => {
-    it('is interactive (axobject EmbeddedObjectRole)', () => {
-      expect(isNativeInteractive(makeNode('object'), getTextAttrValue)).toBe(true);
+    it('is NOT interactive (axobject-query has no entry for <object>)', () => {
+      expect(isNativeInteractive(makeNode('object'), getTextAttrValue)).toBe(false);
     });
   });
 
