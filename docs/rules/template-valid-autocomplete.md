@@ -19,9 +19,14 @@ The rule handles:
 Dynamic values (`autocomplete={{this.acValue}}`) are skipped.
 
 **Not checked**: whether a field name's control group matches the input type
-(e.g. `"current-password"` on `<input type="text">`). axe-core — the reference
-used by `eslint-plugin-jsx-a11y` and `eslint-plugin-lit-a11y` — does not check
-this either. `html-validate` does; we intentionally don't.
+(e.g. `"current-password"` on `<input type="text">`). The HTML spec describes
+these field-name-to-control-group mappings descriptively — it does not
+prohibit mismatched pairings with a MUST/MUST NOT. UA and password-manager
+behavior varies, so such a pairing is a grammar-valid author choice whose
+UA-visibility is a UX question, not a spec violation. `html-validate` flags
+it; we don't. `eslint-plugin-jsx-a11y` and `eslint-plugin-lit-a11y` also
+don't (they delegate to axe-core's `autocomplete-valid`, which omits the
+check) — that corroborates but does not drive the decision.
 
 ## Token order
 
