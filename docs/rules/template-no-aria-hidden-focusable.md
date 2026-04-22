@@ -63,8 +63,8 @@ Options, in rough preference order:
 ## References
 
 - [W3C "Using ARIA" — 4th Rule](https://www.w3.org/TR/using-aria/#4thrule):
-  *"Do not use role='presentation' or aria-hidden='true' on a focusable
-  element."* This is the authoritative normative statement against hiding
+  _"Do not use role='presentation' or aria-hidden='true' on a focusable
+  element."_ This is the authoritative normative statement against hiding
   focusable content.
 - [W3C ACT rule `6cfa84`: Element with aria-hidden has no content in sequential focus navigation](https://www.w3.org/WAI/standards-guidelines/act/rules/6cfa84/)
 - [axe-core rule `aria-hidden-focus`](https://dequeuniversity.com/rules/axe/4.10/aria-hidden-focus)
@@ -72,6 +72,6 @@ Options, in rough preference order:
   [F86](https://www.w3.org/WAI/WCAG21/Techniques/failures/F86) — failure
   techniques for hiding content that should be exposed.
 - [WAI-ARIA 1.2: aria-hidden](https://www.w3.org/TR/wai-aria-1.2/#aria-hidden)
-  — defines the attribute; uses MAY-level language and does *not* itself
+  — defines the attribute; uses MAY-level language and does _not_ itself
   contain the MUST-NOT phrasing often attributed to it.
 - Adapted from [`html-validate`'s `hidden-focusable`](https://html-validate.org/rules/hidden-focusable.html) (MIT).
