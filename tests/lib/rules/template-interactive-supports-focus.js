@@ -93,6 +93,22 @@ ruleTester.run('template-interactive-supports-focus', rule, {
     // === Role with extra whitespace / multi-token is handled via tabindex. ===
     '<template><div role="button link" tabindex="0">x</div></template>',
 
+    // === First-token-only role resolution per WAI-ARIA §4.1. The subsequent
+    // tokens are graceful-degradation fallbacks; only the first one applies,
+    // so a non-interactive first token exempts the element. ===
+    '<template><div role="region button"></div></template>',
+    '<template><div role="article link"></div></template>',
+
+    // === HTML attribute names are case-insensitive — React-style
+    // `tabIndex` is accepted too. ===
+    '<template><div role="button" tabIndex="0"></div></template>',
+    '<template><div role="link" TABINDEX="0"></div></template>',
+
+    // === Disabled form controls are not keyboard-focusable per HTML spec,
+    // but `<button disabled>` without a role is out of scope for this rule. ===
+    '<template><button disabled>x</button></template>',
+    '<template><input disabled /></template>',
+
     // === Peer parity: <div role="button"> without handler still
     // focus-required. But jsx-a11y gates on the handler, so no-handler is
     // valid there. Our rule is closer to angular-eslint (role-driven, not
@@ -232,16 +248,21 @@ ruleTester.run('template-interactive-supports-focus', rule, {
       errors: [{ messageId: 'focusable', data: { tag: 'div', role: 'textbox' } }],
     },
 
-    // === Multi-token role where at least one is interactive. ===
+    // === Multi-token role where the FIRST token is interactive (WAI-ARIA
+    // §4.1: only the first valid role applies; the rest are fallbacks). ===
     {
       code: '<template><div role="button link"></div></template>',
       output: null,
       errors: [{ messageId: 'focusable', data: { tag: 'div', role: 'button' } }],
     },
+
+    // === Disabled form control with an interactive role: disabled removes
+    // inherent focusability, so without tabindex the role has no focus
+    // target and we flag it. ===
     {
-      code: '<template><div role="region button"></div></template>',
+      code: '<template><button disabled role="button">x</button></template>',
       output: null,
-      errors: [{ messageId: 'focusable', data: { tag: 'div', role: 'button' } }],
+      errors: [{ messageId: 'focusable', data: { tag: 'button', role: 'button' } }],
     },
 
     // === Other widget-descended roles (combobox, scrollbar, toolbar). ===
