@@ -39,9 +39,9 @@ the plugin's "when in doubt, don't flag" stance.
 ## Configuration
 
 - `strictTabindex` (`boolean`, default `false`): when `true`, the
-  tabindex escape hatch is disabled — a `<div tabindex="0"
-aria-label="x">` is flagged as strictly as any other generic element.
-  Enable this for strict spec-role enforcement.
+  tabindex escape hatch is disabled — a `<div tabindex="0" aria-label="x">`
+  is flagged as strictly as any other generic element. Enable this for
+  strict spec-role enforcement.
 
 ```js
 module.exports = {

@@ -37,6 +37,10 @@ const validHbs = [
   '<section aria-label="About"></section>',
   // <form> transitions to role=form when aria-label is present.
   '<form aria-label="Search"></form>',
+  // Dynamic role — runtime role may differ from implicit; skip rather than
+  // false-flag against the element's implicit role.
+  '<div role={{this.role}} aria-label="x">x</div>',
+  '<span role={{this.role}} aria-labelledby="t">x</span>',
 ];
 
 const invalidHbs = [
