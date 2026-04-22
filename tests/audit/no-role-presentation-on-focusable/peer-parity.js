@@ -1,10 +1,11 @@
-// Audit fixture — translated test cases from peer plugins to measure
-// behavioral parity of `ember/template-no-role-presentation-on-focusable`
-// against vuejs-accessibility/no-role-presentation-on-focusable.
-//
-// These tests are NOT part of the main suite and do not run in CI. They encode
-// the CURRENT behavior of our rule so that running this file reports pass.
-// Each divergence from an upstream plugin is annotated as "DIVERGENCE —".
+// Audit fixture — translates peer-plugin test cases into assertions against
+// our rule. Runs as part of the default Vitest suite (via the `tests/**/*.js`
+// include glob) and serves double-duty: (1) auditable record of peer-parity
+// divergences, (2) regression coverage pinning CURRENT behavior. Each case
+// encodes what OUR rule does today; divergences from upstream plugins are
+// annotated as `DIVERGENCE —`. Peer-only constructs that can't be translated
+// to Ember templates (JSX spread props, Vue v-bind, Angular `$event`,
+// undefined-handler expression analysis) are marked `AUDIT-SKIP`.
 //
 // Only vuejs-accessibility carries this rule among surveyed peer a11y plugins.
 //
