@@ -66,12 +66,24 @@ const invalidHbs = [
     code: '<img aria-label="x" alt="" src="/y.png" />',
     errors: [{ message: err('aria-label', 'img', 'presentation') }],
   },
+  // With strictTabindex: true, tabindex no longer exempts a generic element.
+  {
+    code: '<span tabindex="0" aria-label="Focusable">x</span>',
+    options: [{ strictTabindex: true }],
+    errors: [{ message: err('aria-label', 'span', 'generic') }],
+  },
+  {
+    code: '<div tabindex="-1" aria-label="x">x</div>',
+    options: [{ strictTabindex: true }],
+    errors: [{ message: err('aria-label', 'div', 'generic') }],
+  },
 ];
 
 const gjsValid = validHbs.map((code) => `<template>${code}</template>`);
-const gjsInvalid = invalidHbs.map(({ code, errors }) => ({
+const gjsInvalid = invalidHbs.map(({ code, errors, options }) => ({
   code: `<template>${code}</template>`,
   errors,
+  ...(options ? { options } : {}),
 }));
 
 const gjsRuleTester = new RuleTester({

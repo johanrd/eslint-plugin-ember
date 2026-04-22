@@ -25,15 +25,34 @@ If no role can be resolved (unknown tag, component invocation, or
 element without an aria-query entry), the rule skips — consistent with
 the plugin's "when in doubt, don't flag" stance.
 
-## Escape hatches (not flagged)
+## Escape hatches (not flagged by default)
 
-- Elements with `tabindex` (any value). Real screen readers (NVDA, JAWS,
-  VoiceOver) read `aria-label` on a tabindexed generic element in
-  practice, so flagging would be a false positive even though the
-  spec-role is still `generic`.
+- Elements with `tabindex` (any value). An explicit `tabindex` signals
+  author-intent-to-interact, even when the computed ARIA role is still
+  generic. Flagging here has a high false-positive cost (the author
+  *wants* the label read on focus) relative to the true-positive it
+  would catch. Disable this hatch with `strictTabindex: true` below.
 - Elements with `role="presentation"` / `role="none"`.
 - Elements whose role is inherently nameable (e.g. `button`, `link`,
   `main`, `navigation`, `region`).
+
+## Configuration
+
+- `strictTabindex` (`boolean`, default `false`): when `true`, the
+  tabindex escape hatch is disabled — a `<div tabindex="0"
+  aria-label="x">` is flagged as strictly as any other generic element.
+  Enable this for strict spec-role enforcement.
+
+```js
+{
+  rules: {
+    'ember/template-no-aria-label-misuse': [
+      'error',
+      { strictTabindex: true },
+    ],
+  },
+}
+```
 
 ## Examples
 
