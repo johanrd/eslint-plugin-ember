@@ -19,7 +19,7 @@ This rule **forbids** the following:
 ```gjs
 <template>
   <div {{on "mouseover" this.showTooltip}}></div>
-  <div {{on "mouseleave" this.hideTooltip}}></div>
+  <div {{on "mouseout" this.hideTooltip}}></div>
 </template>
 ```
 
@@ -28,7 +28,7 @@ This rule **allows** the following:
 ```gjs
 <template>
   <div {{on "mouseover" this.showTooltip}} {{on "focus" this.showTooltip}}></div>
-  <div {{on "mouseleave" this.hideTooltip}} {{on "focusout" this.hideTooltip}}></div>
+  <div {{on "mouseout" this.hideTooltip}} {{on "focusout" this.hideTooltip}}></div>
 </template>
 ```
 
