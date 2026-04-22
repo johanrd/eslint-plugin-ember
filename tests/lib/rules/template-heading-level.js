@@ -27,21 +27,17 @@ const validHbs = [
   '<h1>a</h1><div role="alertdialog"><h1>Alert</h1></div>',
   // No headings at all.
   '<p>no headings</p>',
+  // Skipped levels: allowed by default (component-based intermediate
+  // headings often live in children the lint can't see).
+  '<h1>a</h1><h3>b</h3>',
+  '<h1>a</h1><h2>b</h2><h4>c</h4>',
+  // Initial rank: allowed by default (layout/parent often supplies <h1>).
+  '<h3>Start</h3>',
+  '<h4>Deep start</h4><h2>Back up</h2>',
 ];
 
 const invalidHbs = [
-  {
-    code: '<h3>start</h3>',
-    errors: [{ message: initial(1, 3) }],
-  },
-  {
-    code: '<h1>a</h1><h3>b</h3>',
-    errors: [{ message: skipped(2, 3) }],
-  },
-  {
-    code: '<h1>a</h1><h2>b</h2><h4>c</h4>',
-    errors: [{ message: skipped(3, 4) }],
-  },
+  // Default: only multiple-h1 is flagged.
   {
     code: '<h1>a</h1><h1>b</h1>',
     errors: [{ message: ERR_MULTI_H1 }],
@@ -49,6 +45,20 @@ const invalidHbs = [
   {
     code: '<h1>a</h1><h1>b</h1><dialog><h1>Dialog</h1></dialog>',
     errors: [{ message: ERR_MULTI_H1 }],
+  },
+];
+
+const optionSkippedLevelsStrictInvalid = [
+  // With allowSkippedLevels: false the skipped-level check re-activates.
+  {
+    code: '<h1>a</h1><h3>b</h3>',
+    options: [{ allowSkippedLevels: false }],
+    errors: [{ message: skipped(2, 3) }],
+  },
+  {
+    code: '<h1>a</h1><h2>b</h2><h4>c</h4>',
+    options: [{ allowSkippedLevels: false }],
+    errors: [{ message: skipped(3, 4) }],
   },
 ];
 
@@ -76,6 +86,14 @@ const optionAllowMultipleH1Valid = [
   { code: '<h1>a</h1><h1>b</h1>', options: [{ allowMultipleH1: true }] },
 ];
 
+const optionAllowSkippedLevelsInvalid = [
+  // Default mode (skipped-levels allowed) still flags multiple-h1.
+  {
+    code: '<h1>a</h1><h3>b</h3><h1>c</h1>',
+    errors: [{ message: ERR_MULTI_H1 }],
+  },
+];
+
 const gjsValid = [
   ...validHbs.map((code) => `<template>${code}</template>`),
   ...optionMinH2Valid.map(({ code, options }) => ({
@@ -93,6 +111,16 @@ const gjsInvalid = [
     errors,
   })),
   ...optionMinH2Invalid.map(({ code, options, errors }) => ({
+    code: `<template>${code}</template>`,
+    options,
+    errors,
+  })),
+  ...optionAllowSkippedLevelsInvalid.map(({ code, options, errors }) => ({
+    code: `<template>${code}</template>`,
+    ...(options ? { options } : {}),
+    errors,
+  })),
+  ...optionSkippedLevelsStrictInvalid.map(({ code, options, errors }) => ({
     code: `<template>${code}</template>`,
     options,
     errors,
@@ -116,5 +144,10 @@ const hbsRuleTester = new RuleTester({
 
 hbsRuleTester.run('template-heading-level', rule, {
   valid: [...validHbs, ...optionMinH2Valid, ...optionAllowMultipleH1Valid],
-  invalid: [...invalidHbs, ...optionMinH2Invalid],
+  invalid: [
+    ...invalidHbs,
+    ...optionMinH2Invalid,
+    ...optionAllowSkippedLevelsInvalid,
+    ...optionSkippedLevelsStrictInvalid,
+  ],
 });
