@@ -81,14 +81,14 @@ With `minInitialRank: 'h2'` (route under a layout):
   outer `<h1>`). Set to `'h1'` or `'h2'` at the right scope to enable it.
 
 ```js
-{
+module.exports = {
   rules: {
     'ember/template-heading-level': [
       'error',
       { allowSkippedLevels: false, minInitialRank: 'h2' },
     ],
   },
-}
+};
 ```
 
 ## References
