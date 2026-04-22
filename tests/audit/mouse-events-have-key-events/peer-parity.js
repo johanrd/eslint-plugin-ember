@@ -121,16 +121,14 @@ ruleTester.run('audit:mouse-events-have-key-events (gts)', rule, {
     '<template><app-test {{on "mouseover" this.h}}></app-test></template>',
     '<template><app-test {{on "mouseout" this.h}}></app-test></template>',
 
-    // === DIVERGENCE — mouseenter/mouseleave in default hover lists ===
-    // jsx-a11y / angular / lit default: hoverIn = ['onMouseOver'] only.
-    //   `<div onMouseEnter={...} />` (no focus) → VALID in jsx-a11y.
-    // Our default: hoverIn = ['mouseover', 'mouseenter'].
-    //   `<div {{on "mouseenter" ...}} />` (no focus) → INVALID for us.
-    // We intentionally extend the default so that the "stay-within" variant is
-    // covered out of the box. Users can narrow via `hoverInHandlers: ['mouseover']`.
-    // The opposite-direction case is captured under invalid[] below.
-    // (See tests/lib/rules/template-mouse-events-have-key-events.js for the
-    //  explicit user-opt-out example.)
+    // === PEER PARITY — default excludes mouseenter/mouseleave ===
+    // jsx-a11y / angular / lit / us: default hoverIn = ['mouseover'] only.
+    //   `<div {{on "mouseenter" ...}} />` (no focus) → VALID by default.
+    // Users who also want mouseenter/mouseleave checked add them via
+    // `hoverInHandlers: ['mouseover', 'mouseenter']` / similar. The opt-in
+    // case is captured under invalid[] below with config.
+    '<template><div {{on "mouseenter" this.h}}></div></template>',
+    '<template><div {{on "mouseleave" this.h}}></div></template>',
   ],
 
   invalid: [
@@ -221,18 +219,18 @@ ruleTester.run('audit:mouse-events-have-key-events (gts)', rule, {
       errors: [{ messageId: 'hoverOutMissing' }],
     },
 
-    // === DIVERGENCE — default hover list includes mouseenter / mouseleave ===
-    // jsx-a11y / angular / lit: `<div {{on "mouseenter" ...}} />` would be VALID
-    // because their default hover-in list is mouseover only.
-    // Our rule default includes mouseenter, so this is INVALID for us.
-    // Users who want jsx-a11y-parity can set `hoverInHandlers: ['mouseover']`.
+    // === PEER-PARITY OPT-IN — mouseenter/mouseleave flag only with config ===
+    // Defaults match jsx-a11y / angular / lit: mouseover/mouseout only.
+    // Users who want the non-bubbling per-element variants checked opt in.
     {
       code: '<template><div {{on "mouseenter" this.h}}></div></template>',
+      options: [{ hoverInHandlers: ['mouseover', 'mouseenter'] }],
       output: null,
       errors: [{ messageId: 'hoverInMissing' }],
     },
     {
       code: '<template><div {{on "mouseleave" this.h}}></div></template>',
+      options: [{ hoverOutHandlers: ['mouseout', 'mouseleave'] }],
       output: null,
       errors: [{ messageId: 'hoverOutMissing' }],
     },
@@ -280,6 +278,10 @@ hbsRuleTester.run('audit:mouse-events-have-key-events (hbs)', rule, {
     '<MyElement {{on "mouseover" this.h}} />',
     // Dasherized custom element — not in aria-query's dom map.
     '<custom-button {{on "mouseover" this.h}}></custom-button>',
+    // PEER PARITY — mouseenter/mouseleave excluded from default, matching
+    // jsx-a11y / angular / lit.
+    '<div {{on "mouseenter" this.h}}></div>',
+    '<div {{on "mouseleave" this.h}}></div>',
   ],
   invalid: [
     {
@@ -292,14 +294,16 @@ hbsRuleTester.run('audit:mouse-events-have-key-events (hbs)', rule, {
       output: null,
       errors: [{ messageId: 'hoverOutMissing' }],
     },
-    // DIVERGENCE — default hover list includes mouseenter / mouseleave.
+    // PEER-PARITY OPT-IN — mouseenter/mouseleave flag only with config.
     {
       code: '<div {{on "mouseenter" this.h}}></div>',
+      options: [{ hoverInHandlers: ['mouseover', 'mouseenter'] }],
       output: null,
       errors: [{ messageId: 'hoverInMissing' }],
     },
     {
       code: '<div {{on "mouseleave" this.h}}></div>',
+      options: [{ hoverOutHandlers: ['mouseout', 'mouseleave'] }],
       output: null,
       errors: [{ messageId: 'hoverOutMissing' }],
     },

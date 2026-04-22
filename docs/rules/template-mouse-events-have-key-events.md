@@ -2,7 +2,7 @@
 
 <!-- end auto-generated rule header -->
 
-Enforce that `{{on "mouseover" …}}` / `{{on "mouseenter" …}}` are accompanied by `{{on "focus" …}}` / `{{on "focusin" …}}`, and `{{on "mouseout" …}}` / `{{on "mouseleave" …}}` by `{{on "blur" …}}` / `{{on "focusout" …}}`.
+Enforce that `{{on "mouseover" …}}` is accompanied by `{{on "focus" …}}` / `{{on "focusin" …}}`, and `{{on "mouseout" …}}` by `{{on "blur" …}}` / `{{on "focusout" …}}`. `{{on "mouseenter" …}}` / `{{on "mouseleave" …}}` are NOT checked by default — opt in via `hoverInHandlers` / `hoverOutHandlers` options (see below).
 
 Keyboard-only users can't trigger mouse events. Pairing hover-in events with focus events (and hover-out events with blur events) ensures the same UI state transitions happen for keyboard navigation.
 
@@ -34,8 +34,12 @@ This rule **allows** the following:
 
 ## Options
 
-- `hoverInHandlers` (default `["mouseover", "mouseenter"]`) — which events require a focus pair.
-- `hoverOutHandlers` (default `["mouseout", "mouseleave"]`) — which events require a blur pair.
+- `hoverInHandlers` (default `["mouseover"]`) — which events require a focus pair. Matches jsx-a11y's default. Add `"mouseenter"` to also check the non-bubbling per-element variant.
+- `hoverOutHandlers` (default `["mouseout"]`) — which events require a blur pair. Matches jsx-a11y's default. Add `"mouseleave"` to also check the non-bubbling per-element variant.
+
+### Why are `mouseenter` / `mouseleave` opt-in?
+
+`mouseenter`/`mouseleave` don't bubble — they fire once on entry/exit of the bound element, never on transitions between children. Authors frequently choose them specifically because they want a per-element effect (highlight one row, show one tooltip) that doesn't fire for every child element transition. Those effects are often cleaner to express with CSS `:hover` + `:focus` combined selectors than paired JS handlers. Flagging `mouseenter`/`mouseleave` by default therefore produces noisy false positives on a common authoring pattern. We default to jsx-a11y's narrower handler set; opt in when your project wants the wider check.
 
 ## References
 

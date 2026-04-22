@@ -39,10 +39,15 @@ ruleTester.run('template-mouse-events-have-key-events', rule, {
     // Custom element — not in aria-query's dom map.
     '<template><my-card {{on "mouseover" this.onHover}}></my-card></template>',
 
-    // Configurable handler set — user opts out of mouseenter.
+    // Default handler set matches jsx-a11y — mouseenter/mouseleave are NOT
+    // flagged by default (opt-in via `hoverInHandlers`/`hoverOutHandlers`).
+    '<template><div {{on "mouseenter" this.onHover}}></div></template>',
+    '<template><div {{on "mouseleave" this.onLeave}}></div></template>',
+
+    // Configurable handler set — opt in to mouseenter via config.
     {
-      code: '<template><div {{on "mouseenter" this.onHover}}></div></template>',
-      options: [{ hoverInHandlers: ['mouseover'] }],
+      code: '<template><div {{on "mouseenter" this.onHover}} {{on "focus" this.onHover}}></div></template>',
+      options: [{ hoverInHandlers: ['mouseover', 'mouseenter'] }],
     },
   ],
   invalid: [
@@ -51,8 +56,10 @@ ruleTester.run('template-mouse-events-have-key-events', rule, {
       output: null,
       errors: [{ messageId: 'hoverInMissing' }],
     },
+    // mouseenter flags ONLY when opted into via config.
     {
       code: '<template><div {{on "mouseenter" this.onHover}}></div></template>',
+      options: [{ hoverInHandlers: ['mouseover', 'mouseenter'] }],
       output: null,
       errors: [{ messageId: 'hoverInMissing' }],
     },
@@ -61,8 +68,10 @@ ruleTester.run('template-mouse-events-have-key-events', rule, {
       output: null,
       errors: [{ messageId: 'hoverOutMissing' }],
     },
+    // mouseleave flags ONLY when opted into via config.
     {
       code: '<template><div {{on "mouseleave" this.onLeave}}></div></template>',
+      options: [{ hoverOutHandlers: ['mouseout', 'mouseleave'] }],
       output: null,
       errors: [{ messageId: 'hoverOutMissing' }],
     },
