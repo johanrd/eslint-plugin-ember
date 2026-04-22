@@ -2,8 +2,7 @@ const rule = require('../../../lib/rules/template-no-aria-hidden-focusable');
 const RuleTester = require('eslint').RuleTester;
 
 const ERROR_SELF = '`aria-hidden` cannot be used on focusable elements';
-const ERROR_DESC =
-  '`aria-hidden` on an ancestor hides this focusable element from assistive tech';
+const ERROR_DESC = '`aria-hidden` on an ancestor hides this focusable element from assistive tech';
 
 const validHbs = [
   // No aria-hidden.
