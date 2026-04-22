@@ -2,7 +2,13 @@
 
 <!-- end auto-generated rule header -->
 
-This rule enforces a heading outline:
+This rule enforces a heading outline. It codifies an **authoring
+convention**, not a WCAG requirement — no WCAG 2.1 Success Criterion
+prohibits skipped heading levels. The convention is widely endorsed by
+WebAIM, MDN, and the A11y Project as a screen-reader-navigation aid.
+Enforce if your team has adopted it; skip otherwise.
+
+The checks:
 
 - The first heading in a template defaults to `<h1>`. This can be relaxed
   (see `minInitialRank` below) when the page layout supplies the outer
@@ -83,5 +89,16 @@ This rule **allows** the following:
 ## References
 
 - [HTML spec: Headings and sections](https://html.spec.whatwg.org/multipage/sections.html#headings-and-sections)
-- [WCAG: Section Headings](https://www.w3.org/WAI/WCAG21/Techniques/general/G141)
+  — describes using h1–h6 for document structure. The legacy HTML outline
+  algorithm (which would have made sectioning elements reset heading rank)
+  was never implemented in browsers or AT and has been
+  [removed from WHATWG HTML](https://github.com/whatwg/html/pull/7829).
+- [WCAG 2.1 Technique G141: Organizing a page using headings](https://www.w3.org/WAI/WCAG21/Techniques/general/G141)
+  — a *sufficient technique* (one way to meet SC 1.3.1 / 2.4.6), not itself
+  normative. It does not prescribe no-skipped-levels.
+- [WebAIM: Semantic Structure — Headings](https://webaim.org/techniques/semanticstructure/)
+- [MDN: `<h1>`–`<h6>` Accessibility concerns](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements#accessibility_concerns)
+- [Adrian Roselli: There Is No Document Outline Algorithm](https://adrianroselli.com/2016/08/there-is-no-document-outline-algorithm.html)
+  — useful context for why the sectioning-root reset behavior is a
+  convention, not a spec-enforced outline.
 - Adapted from [`html-validate`'s `heading-level`](https://html-validate.org/rules/heading-level.html) (MIT).
