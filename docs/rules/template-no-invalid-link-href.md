@@ -2,13 +2,15 @@
 
 <!-- end auto-generated rule header -->
 
-Disallow anchor (`<a>`) elements with href values that aren't valid navigable URLs.
+Disallow anchor (`<a>`) elements whose `href` value is a commonly-misused placeholder (e.g. `href="#"`, `href=""`, `href="javascript:..."`).
 
-The [HTML spec](https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-a-element) says `href` must be a valid URL. Using placeholders like `href="#"`, `href=""`, or `href="javascript:..."` to fake a clickable link:
+This rule is **pragmatic accessibility/UX guidance, not spec enforcement.** Values like `href="#"` and `href="javascript:void(0)"` are technically valid URLs per the [HTML spec](https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-a-element); the rule flags them because they are widely-recognized anti-patterns for faking a clickable anchor:
 
 - Breaks expected keyboard behavior (anchors should navigate; buttons should act)
-- Is [explicitly called out as an anti-pattern by MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a#javascript_pseudo-protocol) for the `javascript:` protocol
+- The `javascript:` pseudo-protocol is [called out as an anti-pattern by MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a#javascript_pseudo-protocol)
 - Leaves assistive tech announcing a link that doesn't navigate
+
+If a click handler is what you want, use a `<button>`. If you want a genuine fragment link, use `href="#section-id"`.
 
 Complements [`template-link-href-attributes`](./template-link-href-attributes.md), which handles the **missing** href case. This rule validates the href **value**.
 
