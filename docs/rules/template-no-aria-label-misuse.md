@@ -44,14 +44,14 @@ the plugin's "when in doubt, don't flag" stance.
   Enable this for strict spec-role enforcement.
 
 ```js
-{
+module.exports = {
   rules: {
     'ember/template-no-aria-label-misuse': [
       'error',
       { strictTabindex: true },
     ],
   },
-}
+};
 ```
 
 ## Examples
