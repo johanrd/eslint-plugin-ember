@@ -48,7 +48,6 @@ ruleTester.run('template-no-redundant-role', rule, {
       options: [{ checkAllHTMLElements: false }],
     },
     '<template><input role="combobox"></template>',
-<<<<<<< HEAD
     // <select multiple> has implicit role listbox, so combobox is not redundant.
     '<template><select role="combobox" multiple></select></template>',
     // <select size="5"> (size > 1) has implicit role listbox.
@@ -74,6 +73,10 @@ ruleTester.run('template-no-redundant-role', rule, {
       code: '<template><div role="region"></div></template>',
       options: [{ checkAllHTMLElements: false }],
     },
+    // Per #2694: <section> has implicit role `generic` when unnamed and
+    // `region` when it has an accessible name. role="region" on <section> is
+    // therefore not unconditionally redundant — #38 aligns with this.
+    '<template><section role="region" aria-label="Quick facts">...</section></template>',
   ],
   invalid: [
     {
@@ -231,6 +234,10 @@ hbsRuleTester.run('template-no-redundant-role', rule, {
     // NOT redundant.
     '<select role="listbox"></select>',
     '<select role="listbox" size="1"></select>',
+    // Per #2694: <section> has implicit role `generic` when unnamed and
+    // `region` when it has an accessible name. role="region" on <section> is
+    // therefore not unconditionally redundant — #38 aligns with this.
+    '<section role="region" aria-label="Quick facts">...</section>',
   ],
   invalid: [
     {
