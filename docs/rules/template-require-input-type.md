@@ -51,14 +51,14 @@ Dynamic values such as `type={{this.inputType}}` are not flagged at lint time.
   `type="text"`.
 
 ```js
-{
+module.exports = {
   rules: {
     'ember/template-require-input-type': [
       'error',
       { requireExplicit: true },
     ],
   },
-}
+};
 ```
 
 ## References
