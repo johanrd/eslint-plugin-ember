@@ -64,17 +64,14 @@ const invalidHbs = [
     code: '<input type="text" autocomplete="first-name" />',
     errors: [
       {
-        message:
-          '`"first-name"` is not a valid autocomplete token or field name',
+        message: '`"first-name"` is not a valid autocomplete token or field name',
       },
     ],
   },
   // on/off combined with other tokens.
   {
     code: '<input type="text" autocomplete="off street-address" />',
-    errors: [
-      { message: '`"off"` cannot be combined with other autocomplete tokens' },
-    ],
+    errors: [{ message: '`"off"` cannot be combined with other autocomplete tokens' }],
   },
   // Missing field.
   {
@@ -104,8 +101,7 @@ const invalidHbs = [
     code: '<input type="password" autocomplete="webauthn current-password" />',
     errors: [
       {
-        message:
-          '`"current-password"` must appear before `"webauthn"` in autocomplete',
+        message: '`"current-password"` must appear before `"webauthn"` in autocomplete',
       },
     ],
   },
