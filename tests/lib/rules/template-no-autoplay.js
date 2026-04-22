@@ -38,10 +38,7 @@ const invalidHbs = [
   { code: '<video autoplay muted={{"false"}}></video>', errors: [{ message: ERROR_VIDEO }] },
 ];
 
-const additionalElementsValid = [
-  '<audio autoplay={{false}}></audio>',
-  '<div></div>',
-];
+const additionalElementsValid = ['<audio autoplay={{false}}></audio>', '<div></div>'];
 
 const additionalElementsInvalid = [
   {
