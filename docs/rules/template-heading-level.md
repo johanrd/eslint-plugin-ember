@@ -13,14 +13,14 @@ one check that is reliably verifiable within a single template file runs
 by default; the two checks that depend on tracking heading state across
 component/route/layout boundaries are opt-in.
 
-### Default on: multiple `<h1>` within the same sectioning root
+## Default on: multiple `<h1>` within the same sectioning root
 
 Finding two `<h1>` in one file is a within-file signal regardless of what
 ancestors render. `<dialog>` and elements with `role="dialog"` /
 `role="alertdialog"` create a nested sectioning root — their `<h1>` is
 validated independently.
 
-### Opt-in: skipped levels (`allowSkippedLevels: false`)
+## Opt-in: skipped levels (`allowSkippedLevels: false`)
 
 In component-based apps the intervening headings often live in child
 components the lint can't see. `<h1>` → `<h3>` at lint level might be
@@ -29,7 +29,7 @@ skipped-level checking is off by default. Enable only if your templates
 are flat enough that every heading in the rendered page appears in the
 file being linted.
 
-### Opt-in: initial-rank floor (`minInitialRank`, default `'any'`)
+## Opt-in: initial-rank floor (`minInitialRank`, default `'any'`)
 
 Layouts and parent routes commonly supply the outer `<h1>`, so child
 templates naturally start at `<h2>` or deeper. The initial-rank check is
