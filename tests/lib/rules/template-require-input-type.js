@@ -15,24 +15,12 @@ const validHbs = [
   '<div />',
   '<div type="foo" />',
   '<MyInput type="unknown" />',
+  // Default (requireExplicit=false): missing `type` is allowed.
+  '<input />',
+  '<input name="email" />',
 ];
 
 const invalidHbs = [
-  {
-    code: '<input />',
-    output: '<input type="text" />',
-    errors: [{ message: ERROR_MISSING }],
-  },
-  {
-    code: '<input name="email" />',
-    output: '<input type="text" name="email" />',
-    errors: [{ message: ERROR_MISSING }],
-  },
-  {
-    code: '<input   name="email"   />',
-    output: '<input type="text"   name="email"   />',
-    errors: [{ message: ERROR_MISSING }],
-  },
   {
     code: '<input type="" />',
     output: '<input type="text" />',
@@ -50,6 +38,34 @@ const invalidHbs = [
   },
 ];
 
+const requireExplicitInvalid = [
+  {
+    code: '<input />',
+    options: [{ requireExplicit: true }],
+    output: '<input type="text" />',
+    errors: [{ message: ERROR_MISSING }],
+  },
+  {
+    code: '<input name="email" />',
+    options: [{ requireExplicit: true }],
+    output: '<input type="text" name="email" />',
+    errors: [{ message: ERROR_MISSING }],
+  },
+  {
+    code: '<input   name="email"   />',
+    options: [{ requireExplicit: true }],
+    output: '<input type="text"   name="email"   />',
+    errors: [{ message: ERROR_MISSING }],
+  },
+];
+
+const requireExplicitValid = [
+  // With requireExplicit: an explicit known type satisfies the rule.
+  { code: '<input type="text" />', options: [{ requireExplicit: true }] },
+  // Dynamic type also satisfies — we can't know the runtime value.
+  { code: '<input type={{this.inputType}} />', options: [{ requireExplicit: true }] },
+];
+
 const gjsValid = validHbs.map((code) => `<template>${code}</template>`);
 const gjsInvalid = invalidHbs.map(({ code, output, errors }) => ({
   code: `<template>${code}</template>`,
@@ -63,8 +79,22 @@ const gjsRuleTester = new RuleTester({
 });
 
 gjsRuleTester.run('template-require-input-type', rule, {
-  valid: gjsValid,
-  invalid: gjsInvalid,
+  valid: [
+    ...gjsValid,
+    ...requireExplicitValid.map(({ code, options }) => ({
+      code: `<template>${code}</template>`,
+      options,
+    })),
+  ],
+  invalid: [
+    ...gjsInvalid,
+    ...requireExplicitInvalid.map(({ code, options, output, errors }) => ({
+      code: `<template>${code}</template>`,
+      options,
+      output: `<template>${output}</template>`,
+      errors,
+    })),
+  ],
 });
 
 const hbsRuleTester = new RuleTester({
@@ -73,6 +103,6 @@ const hbsRuleTester = new RuleTester({
 });
 
 hbsRuleTester.run('template-require-input-type', rule, {
-  valid: validHbs,
-  invalid: invalidHbs,
+  valid: [...validHbs, ...requireExplicitValid],
+  invalid: [...invalidHbs, ...requireExplicitInvalid],
 });
