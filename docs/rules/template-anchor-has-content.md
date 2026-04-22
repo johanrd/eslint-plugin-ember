@@ -15,7 +15,7 @@ For each in-scope anchor the rule computes whether the element exposes an access
 - A non-empty `aria-label`, `aria-labelledby`, or `title` on the anchor itself is an accessible name (any non-static / dynamic value is trusted).
 - Static text (including text nested inside child elements) is an accessible name.
 - `<img alt="...">` children contribute their `alt` to the name.
-- `aria-hidden` children contribute nothing, even if they contain text or `alt`.
+- Children with `aria-hidden="true"` (or `{{true}}`) contribute nothing, even if they contain text or `alt`. Valueless / empty-string `aria-hidden` resolves to the default `undefined` per the WAI-ARIA value table and is treated as not-hidden — those children still contribute.
 - Dynamic content (`{{@foo}}`, `{{this.foo}}`, `{{#if ...}}`) is treated as opaque: the rule does not flag the anchor because it cannot know what will render.
 
 ## Examples
@@ -30,6 +30,7 @@ This rule **allows** the following:
   <a href="/x" title="Open menu" />
   <a href="/x"><img alt="Search" /></a>
   <a href="/x">{{@label}}</a>
+  <a href="/x"><span aria-hidden>Profile</span></a>
   <Link href="/x" />
 </template>
 ```
