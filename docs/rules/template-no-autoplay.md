@@ -48,14 +48,11 @@ negatives here.
   autoplay.
 
 ```js
-{
+module.exports = {
   rules: {
-    'ember/template-no-autoplay': [
-      'error',
-      { additionalElements: ['my-media'] },
-    ],
+    'ember/template-no-autoplay': ['error', { additionalElements: ['my-media'] }],
   },
-}
+};
 ```
 
 ## References
