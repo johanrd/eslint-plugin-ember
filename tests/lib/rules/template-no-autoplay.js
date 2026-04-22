@@ -13,6 +13,9 @@ const validHbs = [
   '<audio autoplay={{this.shouldAutoplay}}></audio>',
   '<video autoplay={{false}}></video>',
   '<audio autoplay={{"false"}}></audio>',
+  // Quoted-mustache (GlimmerConcatStatement) opt-out/unknown forms.
+  '<audio autoplay="{{false}}"></audio>',
+  '<audio autoplay="{{shouldPlay}}"></audio>',
   // PascalCase component — not an HTML element
   '<AutoPlayer autoplay />',
   // <video muted autoplay> is out of WCAG SC 1.4.2 scope (ACT rule aaa1bf).
@@ -36,6 +39,8 @@ const invalidHbs = [
   // muted present but statically falsy — autoplay still flagged on <video>.
   { code: '<video autoplay muted={{false}}></video>', errors: [{ message: ERROR_VIDEO }] },
   { code: '<video autoplay muted={{"false"}}></video>', errors: [{ message: ERROR_VIDEO }] },
+  // Quoted-mustache concat with a static string-literal part → truthy.
+  { code: '<audio autoplay="{{\'true\'}}"></audio>', errors: [{ message: ERROR_AUDIO }] },
 ];
 
 const additionalElementsValid = ['<audio autoplay={{false}}></audio>', '<div></div>'];
