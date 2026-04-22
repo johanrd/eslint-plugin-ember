@@ -30,7 +30,7 @@ the plugin's "when in doubt, don't flag" stance.
 - Elements with `tabindex` (any value). An explicit `tabindex` signals
   author-intent-to-interact, even when the computed ARIA role is still
   generic. Flagging here has a high false-positive cost (the author
-  *wants* the label read on focus) relative to the true-positive it
+  _wants_ the label read on focus) relative to the true-positive it
   would catch. Disable this hatch with `strictTabindex: true` below.
 - Elements with `role="presentation"` / `role="none"`.
 - Elements whose role is inherently nameable (e.g. `button`, `link`,
@@ -40,16 +40,13 @@ the plugin's "when in doubt, don't flag" stance.
 
 - `strictTabindex` (`boolean`, default `false`): when `true`, the
   tabindex escape hatch is disabled — a `<div tabindex="0"
-  aria-label="x">` is flagged as strictly as any other generic element.
+aria-label="x">` is flagged as strictly as any other generic element.
   Enable this for strict spec-role enforcement.
 
 ```js
 module.exports = {
   rules: {
-    'ember/template-no-aria-label-misuse': [
-      'error',
-      { strictTabindex: true },
-    ],
+    'ember/template-no-aria-label-misuse': ['error', { strictTabindex: true }],
   },
 };
 ```
@@ -71,8 +68,10 @@ Allows:
 ```hbs
 <button aria-label='Close'>x</button>
 <main aria-label='Primary'>...</main>
-<section aria-label='About'>...</section>     {{! becomes role=region }}
-<form aria-label='Search'>...</form>           {{! becomes role=form }}
+<section aria-label='About'>...</section>
+{{! becomes role=region }}
+<form aria-label='Search'>...</form>
+{{! becomes role=form }}
 <div role='button' aria-label='Custom'>...</div>
 <span tabindex='0' aria-label='Focusable'>...</span>
 ```
