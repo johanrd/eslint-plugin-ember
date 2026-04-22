@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>autoplay="false" probe</title>
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; padding: 24px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { padding: 6px 10px; border-bottom: 1px solid #ddd; text-align: left; font-family: monospace; }
+  th { background: #f4f4f4; }
+  .yes { color: #070; }
+  .no { color: #a00; }
+  pre { background: #f4f4f4; padding: 8px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>autoplay="false" — DOM IDL reflection probe</h1>
+<p>
+Verifies whether the <code>HTMLMediaElement.autoplay</code> IDL property returns
+<code>true</code> when the content attribute is present with value
+<code>"false"</code> — per the HTML boolean-attribute rules.
+</p>
+<table id="out"></table>
+
+<h2>Raw JSON (for headless capture)</h2>
+<pre id="json"></pre>
+
+<script>
+const cases = [
+  '<audio autoplay></audio>',
+  '<audio autoplay=""></audio>',
+  '<audio autoplay="autoplay"></audio>',
+  '<audio autoplay="false"></audio>',
+  '<audio autoplay="hello"></audio>',
+  '<audio></audio>',
+  '<video autoplay="false" src="x.mp4"></video>',
+];
+
+const host = document.createElement('div');
+host.style.display = 'none';
+document.body.appendChild(host);
+
+const out = document.getElementById('out');
+out.innerHTML = '<tr><th>markup</th><th>hasAttribute</th><th>getAttribute</th><th>.autoplay (IDL)</th></tr>';
+const results = [];
+
+for (const html of cases) {
+  host.innerHTML = html;
+  const el = host.firstElementChild;
+  const r = {
+    markup: html,
+    hasAttr: el.hasAttribute('autoplay'),
+    getAttr: el.getAttribute('autoplay'),
+    idlAutoplay: el.autoplay,
+  };
+  results.push(r);
+  const row = out.insertRow();
+  row.innerHTML = `
+    <td>${html.replace(/</g, '&lt;')}</td>
+    <td class="${r.hasAttr ? 'yes' : 'no'}">${r.hasAttr}</td>
+    <td>${JSON.stringify(r.getAttr)}</td>
+    <td class="${r.idlAutoplay ? 'yes' : 'no'}">${r.idlAutoplay}</td>
+  `;
+}
+
+document.getElementById('json').textContent = JSON.stringify({ ua: navigator.userAgent, results }, null, 2);
+console.log('PROBE_RESULTS:', JSON.stringify({ ua: navigator.userAgent, results }));
+</script>
+
+<hr>
+<p><strong>User agent:</strong> <code id="ua"></code></p>
+<script>document.getElementById('ua').textContent = navigator.userAgent;</script>
+</body>
+</html>
