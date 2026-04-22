@@ -50,21 +50,25 @@ Default config:
 **Allows** (by default — opt-in to the relevant option to flag):
 
 ```hbs
-<h3>Start</h3>                           {{! initial-rank check off }}
-<h1>Title</h1><h3>Skipped h2</h3>        {{! skipped-levels check off }}
+<h3>Start</h3>
+{{! initial-rank check off }}
+<h1>Title</h1><h3>Skipped h2</h3>
+{{! skipped-levels check off }}
 ```
 
 With `allowSkippedLevels: false`:
 
 ```hbs
-<h1>Title</h1><h3>Skipped h2</h3>        {{! now flagged }}
+<h1>Title</h1><h3>Skipped h2</h3> {{! now flagged }}
 ```
 
 With `minInitialRank: 'h2'` (route under a layout):
 
 ```hbs
-<h2>Route title</h2>                     {{! allowed — satisfies min h2 }}
-<h4>Too deep</h4>                        {{! flagged — first heading must be h2 or stricter }}
+<h2>Route title</h2>
+{{! allowed — satisfies min h2 }}
+<h4>Too deep</h4>
+{{! flagged — first heading must be h2 or stricter }}
 ```
 
 ## Configuration
@@ -83,10 +87,7 @@ With `minInitialRank: 'h2'` (route under a layout):
 ```js
 module.exports = {
   rules: {
-    'ember/template-heading-level': [
-      'error',
-      { allowSkippedLevels: false, minInitialRank: 'h2' },
-    ],
+    'ember/template-heading-level': ['error', { allowSkippedLevels: false, minInitialRank: 'h2' }],
   },
 };
 ```
@@ -99,7 +100,7 @@ module.exports = {
   was never implemented in browsers or AT and has been
   [removed from WHATWG HTML](https://github.com/whatwg/html/pull/7829).
 - [WCAG 2.1 Technique G141: Organizing a page using headings](https://www.w3.org/WAI/WCAG21/Techniques/general/G141)
-  — a *sufficient technique* (one way to meet SC 1.3.1 / 2.4.6), not itself
+  — a _sufficient technique_ (one way to meet SC 1.3.1 / 2.4.6), not itself
   normative. It does not prescribe no-skipped-levels.
 - [WebAIM: Semantic Structure — Headings](https://webaim.org/techniques/semanticstructure/)
 - [MDN: `<h1>`–`<h6>` Accessibility concerns](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements#accessibility_concerns)
