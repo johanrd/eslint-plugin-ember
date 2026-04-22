@@ -16,10 +16,13 @@ const validHbs = [
   '<input type="password" autocomplete="current-password" />',
   // Full pattern: section + hint + field + webauthn.
   '<input type="text" autocomplete="section-ship shipping address-line1" />',
-  // Multiline field on textarea is fine (group check only restricts <input>).
-  '<textarea autocomplete="street-address"></textarea>',
   '<input type="text" autocomplete="billing family-name" />',
   '<input type="password" autocomplete="new-password webauthn" />',
+  // No control-group check: field name paired with an unrelated input type
+  // is NOT flagged. We defer to axe-core's behavior (grammar only).
+  '<input type="text" autocomplete="current-password" />',
+  '<input type="text" autocomplete="street-address" />',
+  '<input type="email" autocomplete="photo" />',
   // Contact with field2.
   '<input type="email" autocomplete="work email" />',
   '<input type="tel" autocomplete="home tel" />',
@@ -104,22 +107,6 @@ const invalidHbs = [
         message:
           '`"current-password"` must appear before `"webauthn"` in autocomplete',
       },
-    ],
-  },
-  // Wrong control group: multiline on type=text.
-  {
-    code: '<input type="text" autocomplete="street-address" />',
-    errors: [
-      {
-        message: '`"street-address"` cannot be used on `<input type="text">`',
-      },
-    ],
-  },
-  // Wrong control group: url-group field on type=email (only username group).
-  {
-    code: '<input type="email" autocomplete="photo" />',
-    errors: [
-      { message: '`"photo"` cannot be used on `<input type="email">`' },
     ],
   },
 ];

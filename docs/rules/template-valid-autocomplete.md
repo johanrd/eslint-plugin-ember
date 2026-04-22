@@ -13,12 +13,15 @@ The rule handles:
 - `<input type="hidden">` cannot use the bare values `"on"` / `"off"`.
 - `<input type="checkbox | radio | file | submit | image | reset | button">`
   cannot use `autocomplete` at all.
-- Token grammar (see below): tokens must be a valid combination from the
-  section / hint / contact / field-name / webauthn set, in the right order.
-- Field names must match the input type's supported group (e.g.
-  `"current-password"` is not meaningful on `<input type="text">`).
+- Token grammar: tokens must be a valid combination from the section / hint /
+  contact / field-name / webauthn set, in the right order.
 
 Dynamic values (`autocomplete={{this.acValue}}`) are skipped.
+
+**Not checked**: whether a field name's control group matches the input type
+(e.g. `"current-password"` on `<input type="text">`). axe-core — the reference
+used by `eslint-plugin-jsx-a11y` and `eslint-plugin-lit-a11y` — does not check
+this either. `html-validate` does; we intentionally don't.
 
 ## Token order
 
@@ -38,7 +41,6 @@ This rule **forbids** the following:
 ```hbs
 <form autocomplete='yes'>
   <input autocomplete='first-name' type='text' />
-  <input autocomplete='current-password' type='text' />
   <input autocomplete='off street-address' type='text' />
   <input autocomplete='home email family-name' type='text' />
   <input autocomplete='section-a' type='text' />
