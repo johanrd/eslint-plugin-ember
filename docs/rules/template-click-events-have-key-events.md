@@ -6,7 +6,7 @@ Enforce a clickable non-interactive element has at least one keyboard event list
 
 When a `{{on "click" …}}` modifier is attached to a non-interactive DOM element (e.g. `<div>`, `<span>`, `<a>` without `href`), keyboard-only users can't reach the handler through the keyboard path alone. Adding `{{on "keydown" …}}`, `{{on "keyup" …}}`, or `{{on "keypress" …}}` — along with appropriate `role`/`tabindex` to make the element focusable — restores keyboard parity.
 
-### On "normative basis"
+## On "normative basis"
 
 [WCAG 2.1 SC 2.1.1 Keyboard (Level A)](https://www.w3.org/WAI/WCAG21/Understanding/keyboard) requires all functionality to be operable via the keyboard. The click-without-keydown shape is the canonical violation in practice. However, [Understanding 2.1.1](https://www.w3.org/WAI/WCAG21/Understanding/keyboard) explicitly notes that "a custom button only reacting to Enter" still satisfies the SC — so the click+keydown pairing isn't literally spec-mandated. It's a peer-plugin convention (jsx-a11y, vuejs-accessibility, lit-a11y, @angular-eslint/template all use it) as the strongest static-analysis proxy for SC 2.1.1 violations. This rule follows the convention.
 
