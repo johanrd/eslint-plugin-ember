@@ -30,6 +30,21 @@ const validHbs = [
   '<div aria-hidden="true"><p contenteditable="false">static</p></div>',
   // PascalCase component — not inspected (scope caveat).
   '<div aria-hidden="true"><MyComponent /></div>',
+  // Descent stops at component boundary — a <button> *rendered by* the
+  // component's own template is not in scope for this rule.
+  '<div aria-hidden="true"><MyComponent><button>ok</button></MyComponent></div>',
+  // Disabled form controls are not focusable per HTML §6.6.3.
+  '<div aria-hidden="true"><button disabled>ok</button></div>',
+  '<div aria-hidden="true"><input disabled /></div>',
+  '<div aria-hidden="true"><select disabled><option>x</option></select></div>',
+  '<div aria-hidden="true"><textarea disabled></textarea></div>',
+  // Dynamic quoted-mustache aria-hidden — unknown, skip.
+  '<button aria-hidden="{{this.hidden}}">Click</button>',
+  // Dynamic quoted-mustache tabindex — unknown, skip.
+  '<div aria-hidden="true"><span tabindex="{{idx}}">x</span></div>',
+  // aria-hidden with leading/trailing whitespace + mixed case — still truthy,
+  // but the descendant below is NOT focusable, so no violation.
+  '<div aria-hidden=" TRUE "><span>x</span></div>',
 ];
 
 const invalidHbs = [
@@ -65,6 +80,21 @@ const invalidHbs = [
   },
   {
     code: '<div aria-hidden="true"><select><option>x</option></select></div>',
+    errors: [{ message: ERROR_DESC }],
+  },
+  // Quoted-mustache (GlimmerConcatStatement) forms of aria-hidden/tabindex.
+  { code: '<button aria-hidden="{{true}}">Click</button>', errors: [{ message: ERROR_SELF }] },
+  {
+    code: '<div aria-hidden="{{true}}"><button>ok</button></div>',
+    errors: [{ message: ERROR_DESC }],
+  },
+  {
+    code: '<div aria-hidden="true"><span tabindex="{{0}}">x</span></div>',
+    errors: [{ message: ERROR_DESC }],
+  },
+  // aria-hidden with whitespace/mixed case — normalized, ancestor hides.
+  {
+    code: '<div aria-hidden=" TRUE "><button>ok</button></div>',
     errors: [{ message: ERROR_DESC }],
   },
 ];
