@@ -50,7 +50,14 @@ This rule **allows** the following:
 </form>
 ```
 
-Disabled or `hidden` controls are ignored, as they don't submit.
+Controls with the HTML `disabled` attribute are ignored — per
+[HTML §4.10.21.3](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constructing-the-form-data-set)
+they do not contribute to the form-data entry list and cannot collide.
+
+Controls with the HTML `hidden` attribute are **not** exempt: `hidden`
+affects rendering, not form submission. A `hidden` control still submits
+its `name`/`value`, so a duplicate name involving a hidden control is a
+real collision.
 
 ## Limitations
 

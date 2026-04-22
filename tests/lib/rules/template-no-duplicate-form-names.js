@@ -23,9 +23,8 @@ const validHbs = [
   '<form><input name={{this.fieldName}} /><input name="email" /></form>',
   // Same name but in different forms — fine.
   '<form><input name="a" /></form><form><input name="a" /></form>',
-  // Disabled / hidden ignored.
+  // Disabled control is ignored — it does not contribute to form data.
   '<form><input name="a" /><input name="a" disabled /></form>',
-  '<form><input name="a" /><input name="a" hidden /></form>',
   // No name attribute — skip.
   '<form><input /><input /></form>',
   // Empty name — skip.
@@ -58,6 +57,12 @@ const invalidHbs = [
   // No enclosing form — template root acts as scope.
   {
     code: '<input name="x" /><input name="x" />',
+    errors: [{ message: err('x') }],
+  },
+  // `hidden` does not exempt from form submission per HTML spec — a hidden
+  // control carries a real value and can legitimately collide by name.
+  {
+    code: '<form><input name="x" hidden /><input name="x" /></form>',
     errors: [{ message: err('x') }],
   },
 ];
