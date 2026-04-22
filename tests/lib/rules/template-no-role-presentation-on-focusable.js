@@ -38,6 +38,22 @@ ruleTester.run('template-no-role-presentation-on-focusable', rule, {
 
     // No role at all.
     '<template><button></button></template>',
+
+    // <label> is HTML interactive content but NOT keyboard-focusable by default
+    // (clicks forward to the associated control; the label itself isn't in the
+    // tab order). role="presentation" on it is fine.
+    '<template><label role="presentation">Name</label></template>',
+
+    // Per WAI-ARIA role-fallback semantics, when multiple whitespace-separated
+    // role tokens are present, user agents use the FIRST valid token; later
+    // tokens are author-provided fallbacks. So `role="button presentation"`
+    // resolves to "button" — the element is a button, not presentational, and
+    // is NOT flagged.
+    '<template><div role="button presentation" tabindex="0">Click</div></template>',
+
+    // Disabled form controls are not keyboard-focusable (HTML §4.10.18.5).
+    '<template><button disabled role="presentation">Click</button></template>',
+    '<template><input type="text" disabled role="presentation" /></template>',
   ],
   invalid: [
     {
