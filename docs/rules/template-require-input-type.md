@@ -11,7 +11,7 @@ state — the browser reports no error, but the author's intent (validation,
 input-mode hint, platform keyboard) is lost. That's a genuine silent-failure
 class, which this rule always flags and auto-fixes to `type="text"`.
 
-A missing `type` attribute (`<input />`) is *spec-compliant* — the
+A missing `type` attribute (`<input />`) is _spec-compliant_ — the
 missing-value default is the Text state — so flagging it is a style /
 consistency choice, not a correctness one. Opt in with `requireExplicit: true`
 if your team wants parity with `template-require-button-type`.
@@ -53,10 +53,7 @@ Dynamic values such as `type={{this.inputType}}` are not flagged at lint time.
 ```js
 module.exports = {
   rules: {
-    'ember/template-require-input-type': [
-      'error',
-      { requireExplicit: true },
-    ],
+    'ember/template-require-input-type': ['error', { requireExplicit: true }],
   },
 };
 ```
