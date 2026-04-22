@@ -59,8 +59,8 @@ ruleTester.run('template-mouse-events-have-key-events', rule, {
     // mouseenter flags ONLY when opted into via config.
     {
       code: '<template><div {{on "mouseenter" this.onHover}}></div></template>',
-      options: [{ hoverInHandlers: ['mouseover', 'mouseenter'] }],
       output: null,
+      options: [{ hoverInHandlers: ['mouseover', 'mouseenter'] }],
       errors: [{ messageId: 'hoverInMissing' }],
     },
     {
@@ -71,8 +71,8 @@ ruleTester.run('template-mouse-events-have-key-events', rule, {
     // mouseleave flags ONLY when opted into via config.
     {
       code: '<template><div {{on "mouseleave" this.onLeave}}></div></template>',
-      options: [{ hoverOutHandlers: ['mouseout', 'mouseleave'] }],
       output: null,
+      options: [{ hoverOutHandlers: ['mouseout', 'mouseleave'] }],
       errors: [{ messageId: 'hoverOutMissing' }],
     },
     {

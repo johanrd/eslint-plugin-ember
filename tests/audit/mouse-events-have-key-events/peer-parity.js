@@ -224,14 +224,14 @@ ruleTester.run('audit:mouse-events-have-key-events (gts)', rule, {
     // Users who want the non-bubbling per-element variants checked opt in.
     {
       code: '<template><div {{on "mouseenter" this.h}}></div></template>',
-      options: [{ hoverInHandlers: ['mouseover', 'mouseenter'] }],
       output: null,
+      options: [{ hoverInHandlers: ['mouseover', 'mouseenter'] }],
       errors: [{ messageId: 'hoverInMissing' }],
     },
     {
       code: '<template><div {{on "mouseleave" this.h}}></div></template>',
-      options: [{ hoverOutHandlers: ['mouseout', 'mouseleave'] }],
       output: null,
+      options: [{ hoverOutHandlers: ['mouseout', 'mouseleave'] }],
       errors: [{ messageId: 'hoverOutMissing' }],
     },
 
@@ -297,14 +297,14 @@ hbsRuleTester.run('audit:mouse-events-have-key-events (hbs)', rule, {
     // PEER-PARITY OPT-IN — mouseenter/mouseleave flag only with config.
     {
       code: '<div {{on "mouseenter" this.h}}></div>',
-      options: [{ hoverInHandlers: ['mouseover', 'mouseenter'] }],
       output: null,
+      options: [{ hoverInHandlers: ['mouseover', 'mouseenter'] }],
       errors: [{ messageId: 'hoverInMissing' }],
     },
     {
       code: '<div {{on "mouseleave" this.h}}></div>',
-      options: [{ hoverOutHandlers: ['mouseout', 'mouseleave'] }],
       output: null,
+      options: [{ hoverOutHandlers: ['mouseout', 'mouseleave'] }],
       errors: [{ messageId: 'hoverOutMissing' }],
     },
     // angular parity — mouseout + focus is still invalid.
