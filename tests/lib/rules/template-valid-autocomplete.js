@@ -105,6 +105,31 @@ const invalidHbs = [
       },
     ],
   },
+  // `section-` with empty identifier is not a valid token.
+  {
+    code: '<input type="text" autocomplete="section- given-name" />',
+    errors: [{ message: '`"section-"` is not a valid autocomplete token or field name' }],
+  },
+  // Multiplicity: at most one section-*.
+  {
+    code: '<input type="text" autocomplete="section-a section-b given-name" />',
+    errors: [{ message: 'autocomplete can contain at most one `section-*` token' }],
+  },
+  // Multiplicity: shipping and billing are mutually exclusive.
+  {
+    code: '<input type="text" autocomplete="shipping billing street-address" />',
+    errors: [
+      {
+        message:
+          '`"shipping"` and `"billing"` are mutually exclusive and each may appear at most once',
+      },
+    ],
+  },
+  // Multiplicity: webauthn at most once.
+  {
+    code: '<input type="email" autocomplete="webauthn webauthn email" />',
+    errors: [{ message: '`"webauthn"` may appear at most once in autocomplete' }],
+  },
 ];
 
 const gjsValid = validHbs.map((code) => `<template>${code}</template>`);
