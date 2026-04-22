@@ -35,6 +35,16 @@ ruleTester.run('template-no-aria-hidden-on-focusable', rule, {
     // <a> without href isn't focusable by default.
     '<template><a aria-hidden="true">Not a link</a></template>',
 
+    // <label> is HTML interactive content but NOT keyboard-focusable by default
+    // (clicks forward to the associated control; the label itself isn't in the
+    // tab order). So aria-hidden on it is fine.
+    '<template><label aria-hidden="true">Name</label></template>',
+
+    // Disabled form controls are removed from the tab order (HTML §4.10.18.5),
+    // so they're not keyboard-focusable and aria-hidden on them isn't a trap.
+    '<template><button disabled aria-hidden="true">Click me</button></template>',
+    '<template><input disabled aria-hidden="true" /></template>',
+
     // Components — we don't know if they render a focusable element.
     '<template><CustomBtn aria-hidden="true" /></template>',
 
@@ -109,6 +119,13 @@ ruleTester.run('template-no-aria-hidden-on-focusable', rule, {
     },
     {
       code: '<template><button aria-hidden="TRUE"></button></template>',
+      output: null,
+      errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
+    },
+    {
+      // Whitespace-padded "true" is still a truthy aria-hidden per enumerated-
+      // attribute normalization (trim + case-insensitive).
+      code: '<template><button aria-hidden=" true "></button></template>',
       output: null,
       errors: [{ messageId: 'noAriaHiddenOnFocusable' }],
     },
