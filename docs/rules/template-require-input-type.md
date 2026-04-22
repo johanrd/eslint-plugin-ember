@@ -1,5 +1,7 @@
 # ember/template-require-input-type
 
+🔧 This rule is automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix).
+
 <!-- end auto-generated rule header -->
 
 This rule rejects `<input type="...">` values that are not one of the input
