@@ -1,8 +1,7 @@
 const rule = require('../../../lib/rules/template-valid-input-attributes');
 const RuleTester = require('eslint').RuleTester;
 
-const err = (attr, type) =>
-  `Attribute \`${attr}\` is not allowed on \`<input type="${type}">\``;
+const err = (attr, type) => `Attribute \`${attr}\` is not allowed on \`<input type="${type}">\``;
 
 const validHbs = [
   // Attribute matches type.
@@ -43,10 +42,7 @@ const invalidHbs = [
   },
   {
     code: '<input type="submit" pattern="x" size="5" />',
-    errors: [
-      { message: err('pattern', 'submit') },
-      { message: err('size', 'submit') },
-    ],
+    errors: [{ message: err('pattern', 'submit') }, { message: err('size', 'submit') }],
   },
   {
     code: '<input type="TEXT" accept="image/*" />',
