@@ -75,6 +75,10 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     '<template><span tabindex="-1">text</span></template>',
     '<template><section tabindex="-1">scroll target</section></template>',
     '<template><div tabindex={{-1}}></div></template>',
+
+    // WAI-ARIA 1.2 §4.1 role fallback: unrecognized first token is skipped,
+    // the next recognized token applies. `button` is interactive → allowed.
+    '<template><div role="foobar button" tabindex="0"></div></template>',
   ],
   invalid: [
     {
@@ -120,6 +124,13 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     },
     {
       code: '<template><video tabindex="0"></video></template>',
+      output: null,
+      errors: [{ messageId: 'noNonInteractiveTabindex' }],
+    },
+    // WAI-ARIA 1.2 §4.1 role fallback: first recognized token wins.
+    // `region` is non-interactive → flagged; `button` (second token) is ignored.
+    {
+      code: '<template><div role="region button" tabindex="0"></div></template>',
       output: null,
       errors: [{ messageId: 'noNonInteractiveTabindex' }],
     },
