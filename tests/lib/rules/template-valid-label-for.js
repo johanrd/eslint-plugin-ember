@@ -87,9 +87,36 @@ const gjsRuleTester = new RuleTester({
   parserOptions: { ecmaVersion: 2022, sourceType: 'module' },
 });
 
+// Multi-`<template>` cases — ids in one block don't resolve `for` in another.
+const multiTemplateValid = [
+  // Each template contains its own matching id — both valid in isolation.
+  `const Widget = <template><input id="email" /></template>;
+<template><label for="main">Main</label><input id="main" /></template>`,
+  // Sibling templates both have independent matching pairs.
+  `<template><label for="a">A</label><input id="a" /></template>
+<template><label for="b">B</label><input id="b" /></template>`,
+];
+
+const multiTemplateInvalid = [
+  // First template declares id="email", second has <label for="email">.
+  // Without per-template scoping this would (wrongly) resolve across the
+  // file. Per-template scoping treats it as "target missing in this
+  // template" — and since missing-target silently passes (partial-template
+  // allowance), this case doesn't flag. So we need a stronger case: the
+  // `for` target exists IN THIS template but is non-labelable, while a
+  // labelable id of the same name lives in a SIBLING template. Without
+  // scoping the rule would find the labelable one and pass; with scoping,
+  // it correctly flags the local non-labelable.
+  {
+    code: `const Widget = <template><input id="x" /></template>;
+<template><label for="x">x</label><div id="x">text</div></template>`,
+    errors: [{ message: errNotLabelable('x') }],
+  },
+];
+
 gjsRuleTester.run('template-valid-label-for', rule, {
-  valid: gjsValid,
-  invalid: gjsInvalid,
+  valid: [...gjsValid, ...multiTemplateValid],
+  invalid: [...gjsInvalid, ...multiTemplateInvalid],
 });
 
 const hbsRuleTester = new RuleTester({
