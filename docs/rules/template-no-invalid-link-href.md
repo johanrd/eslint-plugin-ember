@@ -25,7 +25,7 @@ This rule **forbids** the following:
   <a href="">Click</a>
   <a href>Click</a>
   <a href="javascript:void(0)">Click</a>
-  <a href="JavaScript:alert(1)">XSS</a>
+  <a href="JavaScript:alert(1)">Execute</a>
 </template>
 ```
 
