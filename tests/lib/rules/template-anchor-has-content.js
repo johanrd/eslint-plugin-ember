@@ -200,6 +200,21 @@ ruleTester.run('template-anchor-has-content', rule, {
       output: null,
       errors: [{ messageId: 'anchorHasContent' }],
     },
+    // Children hidden via HTML `hidden` boolean attribute are not rendered
+    // and not exposed to AT (HTML §5.4) — they contribute no accessible
+    // name. A `<span hidden>` inside an otherwise empty anchor should flag.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><span hidden>Hidden backup</span></a></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><span hidden>Hidden</span><span></span></a></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
     // Nested empty element.
     {
       filename: 'test.gjs',
