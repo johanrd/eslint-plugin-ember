@@ -29,6 +29,14 @@ const validHbs = [
   '<form><input /><input /></form>',
   // Empty name — skip.
   '<form><input name="" /><input name="" /></form>',
+
+  // Mutually-exclusive branches of {{#if}} / {{#unless}} / {{#each}}{{else}}
+  // never both render — same-name fields across branches aren't duplicates.
+  '<form>{{#if this.editing}}<input name="title" />{{else}}<input name="title" />{{/if}}</form>',
+  '<form>{{#unless this.readOnly}}<input name="q" />{{else}}<input name="q" />{{/unless}}</form>',
+  '<form>{{#each this.items}}<input name="items[]" />{{else}}<input name="items[]" />{{/each}}</form>',
+  // Nested: inner mutual exclusion under outer common ancestor.
+  '<form>{{#if this.a}}{{#if this.b}}<input name="x" />{{else}}<input name="x" />{{/if}}{{/if}}</form>',
 ];
 
 const invalidHbs = [
@@ -64,6 +72,26 @@ const invalidHbs = [
   {
     code: '<form><input name="x" hidden /><input name="x" /></form>',
     errors: [{ message: err('x') }],
+  },
+  // Conditional WITH an unconditional sibling — the unconditional renders
+  // alongside EITHER branch, so it's flagged (only the unconditional gets
+  // the report; the two branch-inputs are mutually exclusive with each
+  // other and individually don't collide with any prior entry).
+  {
+    code: '<form>{{#if this.a}}<input name="x" />{{else}}<input name="x" />{{/if}}<input name="x" /></form>',
+    errors: [{ message: err('x') }],
+  },
+  // Two separate `{{#if}}`s are NOT mutually exclusive — both can render
+  // together when both conditions are true.
+  {
+    code: '<form>{{#if this.a}}<input name="x" />{{/if}}{{#if this.b}}<input name="x" />{{/if}}</form>',
+    errors: [{ message: err('x') }],
+  },
+  // {{#let}} is pure scoping, not mutual exclusion — two inputs across let
+  // bodies both render.
+  {
+    code: '<form>{{#let this.a as |x|}}<input name="n" />{{/let}}{{#let this.b as |y|}}<input name="n" />{{/let}}</form>',
+    errors: [{ message: err('n') }],
   },
 ];
 
