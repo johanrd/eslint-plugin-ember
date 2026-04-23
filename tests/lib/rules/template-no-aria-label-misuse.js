@@ -30,6 +30,13 @@ const validHbs = [
   '<div aria-label=""></div>',
   // Ember component — skipped (role unknowable).
   '<MyButton aria-label="x" />',
+  // Custom elements — not in HTML/SVG/MathML tag lists, skipped.
+  '<my-widget aria-label="x"></my-widget>',
+  '<emoji-picker aria-label="x"></emoji-picker>',
+  // Colon-namespaced tags (SVG DOM prefix form) — not enumerable, skipped.
+  '<svg:rect aria-label="x" />',
+  // Named blocks (Ember component API) — skipped.
+  '<:slot aria-label="x" />',
   // Elements with no aria-query entry — skipped ("when in doubt, don't flag").
   '<audio aria-label="silent"></audio>',
   '<input type="hidden" aria-label="x" />',
