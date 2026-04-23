@@ -32,6 +32,7 @@ const validHbs = [
   '<form><input name="a" /></form><form><input name="a" /></form>',
   // Disabled control is ignored — it does not contribute to form data.
   '<form><input name="a" /><input name="a" disabled /></form>',
+  '<form><input name="a" /><input name="a" disabled="disabled" /></form>',
   // No name attribute — skip.
   '<form><input /><input /></form>',
   // Empty name — skip.
@@ -74,6 +75,14 @@ const invalidHbs = [
   // Text + image (image is submit-like; text is not shareable) — collision.
   {
     code: '<form><input type="text" name="a" /><input type="image" name="a" src="/x.png" /></form>',
+    errors: [{ message: err('a') }],
+  },
+  // `disabled={{false}}` renders no `disabled` attribute at runtime
+  // (Glimmer VM normalizes boolean false to attribute removal) — the
+  // control IS enabled and contributes to form data, so the duplicate
+  // name collides with the enabled sibling.
+  {
+    code: '<form><input name="a" /><input name="a" disabled={{false}} /></form>',
     errors: [{ message: err('a') }],
   },
   // No enclosing form — template root acts as scope.
