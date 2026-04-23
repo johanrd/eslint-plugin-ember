@@ -94,6 +94,18 @@ gjsRuleTester.run('template-require-input-type', rule, {
       code: `<template>${code}</template>`,
       options,
     })),
+    // Scope-shadowed `input` — the template's `<input>` refers to the local
+    // const binding (a component), not the native HTML element. The rule
+    // skips it via `isNativeElement`'s scope check.
+    `const input = 'foo';
+<template><input type="not-a-valid-type" /></template>`,
+    `const input = 'foo';
+<template><input /></template>`,
+    // Block-param shadowing — `<Foo as |input|>` binds `input` inside the
+    // yield block. The inner `<input>` should resolve to the block-param,
+    // not the native tag.
+    `import Foo from 'whatever';
+<template><Foo as |input|><input type="not-a-valid-type" /></Foo></template>`,
   ],
   invalid: [
     ...gjsInvalid,
