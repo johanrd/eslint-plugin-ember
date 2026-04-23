@@ -185,6 +185,21 @@ ruleTester.run('template-anchor-has-content', rule, {
       output: null,
       errors: [{ messageId: 'anchorHasContent' }],
     },
+    // `&nbsp;` is normalized to space — `aria-label="&nbsp;"` is functionally
+    // empty for assistive tech and should not count as an accessible name.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x" aria-label="&nbsp;" /></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
+    // Same normalization in the `<img alt>` contribution path.
+    {
+      filename: 'test.gjs',
+      code: '<template><a href="/x"><img alt="&nbsp;" src="/x.png" /></a></template>',
+      output: null,
+      errors: [{ messageId: 'anchorHasContent' }],
+    },
     // Nested empty element.
     {
       filename: 'test.gjs',
