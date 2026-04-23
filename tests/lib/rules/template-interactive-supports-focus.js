@@ -93,11 +93,16 @@ ruleTester.run('template-interactive-supports-focus', rule, {
     // === Role with extra whitespace / multi-token is handled via tabindex. ===
     '<template><div role="button link" tabindex="0">x</div></template>',
 
-    // === First-token-only role resolution per WAI-ARIA §4.1. The subsequent
-    // tokens are graceful-degradation fallbacks; only the first one applies,
-    // so a non-interactive first token exempts the element. ===
+    // === Role-fallback resolution per WAI-ARIA §4.1. UAs walk for the first
+    // RECOGNISED role, skipping unknown tokens. So:
+    //   - First recognised is non-interactive → rule exempts (no focus req).
+    //   - All tokens unknown → no recognised role → rule exempts.
+    //   - First recognised is interactive → rule requires focusability.
+    //     (That case is tested in invalid[] below.)
     '<template><div role="region button"></div></template>',
     '<template><div role="article link"></div></template>',
+    // All-unknown token list — no recognised role, rule skips.
+    '<template><div role="foo bar"></div></template>',
 
     // === HTML attribute names are case-insensitive — React-style
     // `tabIndex` is accepted too. ===
@@ -122,6 +127,14 @@ ruleTester.run('template-interactive-supports-focus', rule, {
     // focus — flagged (parity with jsx-a11y / vue-a11y / angular-eslint). ===
     {
       code: '<template><div role="button"></div></template>',
+      output: null,
+      errors: [{ messageId: 'focusable', data: { tag: 'div', role: 'button' } }],
+    },
+    // Role-fallback: UAs walk past unknown leading tokens to the first
+    // recognised role (`button` here). Rule should require focusability.
+    // LLM guardrail: models sometimes emit speculative unknown-first lists.
+    {
+      code: '<template><div role="xxyxyz button"></div></template>',
       output: null,
       errors: [{ messageId: 'focusable', data: { tag: 'div', role: 'button' } }],
     },
