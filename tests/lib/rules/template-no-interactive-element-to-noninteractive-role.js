@@ -34,7 +34,11 @@ ruleTester.run('template-no-interactive-element-to-noninteractive-role', rule, {
     '<template><button role="fakerole">Click</button></template>',
 
     // <input type="hidden"> is not interactive — role assignment allowed.
+    // HTML type values are ASCII case-insensitive and may carry incidental
+    // whitespace; these variants should behave the same as lowercase.
     '<template><input type="hidden" role="presentation" /></template>',
+    '<template><input type="HIDDEN" role="presentation" /></template>',
+    '<template><input type=" hidden " role="presentation" /></template>',
 
     // <a> without href is not interactive.
     '<template><a role="heading">Not a link</a></template>',
