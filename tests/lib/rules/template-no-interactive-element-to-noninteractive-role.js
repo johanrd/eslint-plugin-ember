@@ -40,6 +40,7 @@ ruleTester.run('template-no-interactive-element-to-noninteractive-role', rule, {
     '<template><input type="HIDDEN" role="presentation" /></template>',
     '<template><input type=" hidden " role="presentation" /></template>',
 
+
     // <a> without href is not interactive.
     '<template><a role="heading">Not a link</a></template>',
 
