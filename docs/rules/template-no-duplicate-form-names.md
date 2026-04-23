@@ -51,7 +51,7 @@ This rule **allows** the following:
 ```
 
 Controls with the HTML `disabled` attribute are ignored — per
-[HTML §4.10.21.3](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constructing-the-form-data-set)
+[HTML §4.10.21.4](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constructing-the-form-data-set)
 they do not contribute to the form-data entry list and cannot collide.
 
 Controls with the HTML `hidden` attribute are **not** exempt: `hidden`
