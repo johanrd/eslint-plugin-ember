@@ -45,6 +45,12 @@ const invalidHbs = [
 
 const additionalElementsValid = ['<audio autoplay={{false}}></audio>', '<div></div>'];
 
+// Opt-in `additionalElements` configured but the element doesn't carry
+// autoplay — pins that the option wiring doesn't over-flag on its own.
+const additionalElementsOptionValid = [
+  { code: '<my-media></my-media>', options: [{ additionalElements: ['my-media'] }] },
+];
+
 const additionalElementsInvalid = [
   {
     code: '<my-media autoplay></my-media>',
@@ -70,7 +76,14 @@ const gjsRuleTester = new RuleTester({
 });
 
 gjsRuleTester.run('template-no-autoplay', rule, {
-  valid: [...gjsValid, ...additionalElementsValid.map((code) => `<template>${code}</template>`)],
+  valid: [
+    ...gjsValid,
+    ...additionalElementsValid.map((code) => `<template>${code}</template>`),
+    ...additionalElementsOptionValid.map(({ code, options }) => ({
+      code: `<template>${code}</template>`,
+      options,
+    })),
+  ],
   invalid: [
     ...gjsInvalid,
     ...additionalElementsInvalid.map(({ code, options, errors }) => ({
@@ -87,6 +100,6 @@ const hbsRuleTester = new RuleTester({
 });
 
 hbsRuleTester.run('template-no-autoplay', rule, {
-  valid: [...validHbs, ...additionalElementsValid],
+  valid: [...validHbs, ...additionalElementsValid, ...additionalElementsOptionValid],
   invalid: [...invalidHbs, ...additionalElementsInvalid],
 });
