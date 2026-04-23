@@ -12,6 +12,13 @@ const validHbs = [
   // Submit buttons can share a name.
   '<form><button type="submit" name="a" value="save">S</button><button type="submit" name="a" value="p">P</button></form>',
   '<form><input type="submit" name="act" /><input type="submit" name="act" /></form>',
+  // Mixed submit-like controls — per HTML §4.10.21.4 only one contributes to
+  // the form-data entry list per submission, so any combination can share a
+  // name. Submit-like set: `<button [type=submit]>`, `<input type=submit>`,
+  // `<input type=image>`. Derived from aria-query's `button`-role mapping.
+  '<form><input type="submit" name="a" /><input type="image" name="a" src="/x.png" /></form>',
+  '<form><button name="a" value="save">Save</button><input type="image" name="a" src="/x.png" /></form>',
+  '<form><input type="image" name="a" src="/a.png" /><input type="image" name="a" src="/b.png" /></form>',
   // Non-submitting types (button, reset) don't contribute to form data; their
   // `name` is skipped entirely, so any combination is fine.
   '<form><button type="reset" name="r">1</button><button type="reset" name="r">2</button></form>',
@@ -57,9 +64,16 @@ const invalidHbs = [
     code: '<form><input type="radio" name="c" /><input type="text" name="c" /></form>',
     errors: [{ message: err('c') }],
   },
-  // Radio + submit (both in shared set but different types) — not compatible.
+  // Radio + submit — different share categories (radio group vs submit-
+  // like). Both contribute to form data in different ways; same name is
+  // a real collision.
   {
     code: '<form><input type="radio" name="a" /><input type="submit" name="a" /></form>',
+    errors: [{ message: err('a') }],
+  },
+  // Text + image (image is submit-like; text is not shareable) — collision.
+  {
+    code: '<form><input type="text" name="a" /><input type="image" name="a" src="/x.png" /></form>',
     errors: [{ message: err('a') }],
   },
   // No enclosing form — template root acts as scope.
