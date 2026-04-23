@@ -95,6 +95,20 @@ ruleTester.run('template-no-interactive-element-to-noninteractive-role', rule, {
       output: null,
       errors: [{ messageId: 'mismatch' }],
     },
+    // HTML attribute values for known enumerated attributes are ASCII
+    // case-insensitive per spec and may carry incidental whitespace. A
+    // checkbox with `type="CHECKBOX"` / `type=" checkbox "` is still a
+    // checkbox and should be flagged the same as lowercase.
+    {
+      code: '<template><input type="CHECKBOX" role="presentation" /></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
+    {
+      code: '<template><input type=" checkbox " role="presentation" /></template>',
+      output: null,
+      errors: [{ messageId: 'mismatch' }],
+    },
     // <video controls> / <audio controls> exposes user-operable playback UI —
     // stripping interactive semantics with a non-interactive role is wrong.
     {
