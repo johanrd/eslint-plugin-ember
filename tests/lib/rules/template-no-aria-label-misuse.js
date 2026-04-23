@@ -48,6 +48,10 @@ const validHbs = [
   // false-flag against the element's implicit role.
   '<div role={{this.role}} aria-label="x">x</div>',
   '<span role={{this.role}} aria-labelledby="t">x</span>',
+  // Role-fallback: UAs walk unknown leading tokens to the first recognised
+  // role per WAI-ARIA §4.1. `role="xxyxyz button"` resolves to `button`,
+  // which accepts aria-label — should not flag.
+  '<div role="xxyxyz button" aria-label="Custom">x</div>',
 ];
 
 const invalidHbs = [
