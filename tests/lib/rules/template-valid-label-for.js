@@ -2,7 +2,7 @@ const rule = require('../../../lib/rules/template-valid-label-for');
 const RuleTester = require('eslint').RuleTester;
 
 const errNotLabelable = (id) =>
-  `\`<label for="${id}">\` must reference a labelable form control (\`<input>\`, \`<select>\`, \`<textarea>\`, \`<button>\`, \`<meter>\`, \`<output>\`, \`<progress>\`)`;
+  `\`<label for="${id}">\` must reference a labelable form control (\`<input>\`, \`<select>\`, \`<textarea>\`, \`<button>\`, \`<meter>\`, \`<output>\`, \`<progress>\`, or Ember \`<Input>\` / \`<Textarea>\`)`;
 const errRedundant = (id) =>
   `\`for="${id}"\` is redundant: \`<label>\` already contains the referenced element`;
 
@@ -30,6 +30,18 @@ const validHbs = [
   // not redundant.
   '<label for="second"><input id="first" /><input id="second" /></label>',
   '<label for="pick"><input id="a" /><select id="pick"><option>x</option></select></label>',
+
+  // Ember built-in <Input> / <Textarea> components render to native <input>
+  // and <textarea>. They are valid <label for="…"> targets in classic HBS
+  // (always resolve to the built-in) and treated as labelable in strict
+  // GJS/GTS too — follow ember-template-lint's precedent on
+  // `require-input-label`: better to risk false negatives (accepting an
+  // imported override that isn't actually labelable) than false positives.
+  '<label for="email">Email</label><Input id="email" />',
+  '<label for="bio">Bio</label><Textarea id="bio" />',
+  // `for` targets a non-first labelable descendant — explicit override of
+  // the implicit-containment rule, not redundant, even with Ember built-ins.
+  '<label for="second"><Input id="first" /><Input id="second" /></label>',
 ];
 
 const invalidHbs = [
@@ -61,19 +73,6 @@ const invalidHbs = [
   {
     code: '<label for="pw"><span>Password</span><input id="pw" type="password" /></label>',
     errors: [{ message: errRedundant('pw') }],
-  },
-  // Scope limitation: Ember `<Input>` / `<Textarea>` components are tagged
-  // as components, not native HTML, so this rule treats them as not
-  // labelable. Authors relying on these must suppress on a case-by-case
-  // basis. Documented in the rule doc; captured here so the behavior is
-  // locked down and any future change is intentional.
-  {
-    code: '<label for="email">Email</label><Input id="email" />',
-    errors: [{ message: errNotLabelable('email') }],
-  },
-  {
-    code: '<label for="bio">Bio</label><Textarea id="bio" />',
-    errors: [{ message: errNotLabelable('bio') }],
   },
 ];
 

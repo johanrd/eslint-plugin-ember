@@ -51,13 +51,16 @@ This rule **allows** the following:
   component or a partial) can't be validated and are silently ignored.
 - Multiple occurrences of the same `id` are tracked as the first one seen;
   `template-no-duplicate-id` handles the duplicate case separately.
-- **Scope:** this rule operates on native HTML labelable controls only.
-  Ember's `<Input>` / `<Textarea>` components that render to `<input>` /
-  `<textarea>` at runtime are not tracked — resolving a component's
-  rendered tag requires component-resolution, which this rule does not
-  perform. If you rely on those, either rewrite to native controls so
-  the rule can see them, or suppress on a case-by-case basis with a
-  disable-line comment.
+- **Scope:** native HTML labelable controls plus Ember's built-in `<Input>`
+  and `<Textarea>` components (which render to `<input>` / `<textarea>`
+  and accept `id=` forwarding, so they are valid `<label for>` targets).
+  In classic Handlebars, `<Input>` always resolves to the built-in. In
+  strict GJS/GTS, `<Input>` could be an imported override; we follow
+  [`ember-template-lint`'s precedent on `require-input-label`](https://github.com/ember-template-lint/ember-template-lint/blob/master/lib/rules/require-input-label.js)
+  and treat the tag as labelable anyway — "better to risk false negatives
+  than false positives." Other components (custom labelable wrappers) are
+  not recognized; rewrite to native controls or suppress on a case-by-case
+  basis.
 
 ## References
 
