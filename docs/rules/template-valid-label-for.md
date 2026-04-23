@@ -4,9 +4,15 @@
 
 This rule validates that `<label for="x">` references a labelable form
 control (`<input>` — except `type="hidden"` — `<select>`, `<textarea>`,
-`<button>`, `<meter>`, `<output>`, `<progress>`) defined in the same
-template. It also flags `for` as redundant when the referenced element
-is already nested inside the `<label>`.
+`<button>`, `<meter>`, `<output>`, `<progress>`, plus Ember's built-in
+`<Input>` / `<Textarea>`) defined in the same template.
+
+It also flags `for` as redundant when the referenced element is the one
+that HTML's implicit-containment rule would have bound anyway — i.e. the
+**first labelable descendant** of the `<label>` (per HTML §4.10.4). When
+a label contains multiple labelable descendants and `for` points at a
+non-first one, the author is deliberately overriding the implicit choice;
+this is not redundant and is NOT flagged.
 
 Only the label side is checked. Use `template-require-input-label` for the
 other direction (every input should have a label).
