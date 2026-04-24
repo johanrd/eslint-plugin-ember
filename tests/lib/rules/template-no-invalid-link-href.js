@@ -27,6 +27,12 @@ ruleTester.run('template-no-invalid-link-href', rule, {
     // Non-anchor elements are not in scope.
     '<template><button>Click me</button></template>',
     '<template><div href="#">Not an anchor</div></template>',
+
+    // <area> is in scope — same href semantics as <a>. Valid values pass.
+    '<template><map name="m"><area href="/region-a" shape="rect" coords="0,0,10,10" /></map></template>',
+    '<template><area href="#section" shape="default" /></template>',
+    // Dynamic area href — skip.
+    '<template><area href={{this.url}} shape="rect" coords="0,0,1,1" /></template>',
   ],
   invalid: [
     // Plain "#" placeholder.
@@ -70,6 +76,22 @@ ruleTester.run('template-no-invalid-link-href', rule, {
     // Leading whitespace — catches obfuscations.
     {
       code: '<template><a href=" javascript:void(0)">Click</a></template>',
+      output: null,
+      errors: [{ messageId: 'invalidHref' }],
+    },
+    // <area> shares <a>'s href semantics — same invalid values flag.
+    {
+      code: '<template><area href="#" shape="rect" coords="0,0,10,10" /></template>',
+      output: null,
+      errors: [{ messageId: 'invalidHref' }],
+    },
+    {
+      code: '<template><area href="" shape="rect" coords="0,0,10,10" /></template>',
+      output: null,
+      errors: [{ messageId: 'invalidHref' }],
+    },
+    {
+      code: '<template><area href="javascript:alert(1)" shape="rect" coords="0,0,10,10" /></template>',
       output: null,
       errors: [{ messageId: 'invalidHref' }],
     },
