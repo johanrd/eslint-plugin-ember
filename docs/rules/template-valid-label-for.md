@@ -67,7 +67,6 @@ This rule **allows** the following:
   and `<Textarea>` components (which render to `<input>` / `<textarea>` and
   accept `id=` forwarding, so they are valid `<label for>` targets).
   Resolution depends on template mode:
-
   - **Classic Handlebars (`.hbs`):** `<Input>` / `<Textarea>` always resolve
     globally to the built-in — treated as labelable.
   - **Strict GJS/GTS (`.gjs` / `.gts`):** the rule inspects the file's
