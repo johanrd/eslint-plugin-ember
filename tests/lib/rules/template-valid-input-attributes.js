@@ -17,8 +17,11 @@ const validHbs = [
   '<input type="file" multiple capture="user" />',
   // Dynamic type — skip.
   '<input type={{this.t}} pattern="\\d+" />',
-  // No explicit type — skip.
+  // Missing / valueless / empty / unknown type fall back to the Text state
+  // per HTML §4.10.5. Attributes valid for text still pass.
   '<input pattern="\\d+" />',
+  '<input type />',
+  '<input maxlength="100" size="20" readonly />',
   // Not an input — rule doesn't apply.
   '<textarea maxlength="10"></textarea>',
   // Empty/whitespace/unknown type values fall back to the Text state per HTML
@@ -52,6 +55,25 @@ const invalidHbs = [
   {
     code: '<input type="TEXT" accept="image/*" />',
     errors: [{ message: err('accept', 'text') }],
+  },
+  // Text-state fallback — <input> with missing/valueless/empty/unknown type
+  // is the Text state per HTML spec. Attributes incompatible with text are
+  // flagged as `type="text"` in the error message.
+  {
+    code: '<input name="x" multiple />',
+    errors: [{ message: err('multiple', 'text') }],
+  },
+  {
+    code: '<input alt="foo" />',
+    errors: [{ message: err('alt', 'text') }],
+  },
+  {
+    code: '<input type accept="image/*" />',
+    errors: [{ message: err('accept', 'text') }],
+  },
+  {
+    code: '<input type="unknown" src="/x.png" />',
+    errors: [{ message: err('src', 'text') }],
   },
 ];
 
