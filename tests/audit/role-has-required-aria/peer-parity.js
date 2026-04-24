@@ -71,21 +71,20 @@ ruleTester.run('audit:role-has-required-aria (gts)', rule, {
     //   jsx-a11y / angular / ours all flag these pairings (captured in the
     //   `invalid` section below).
 
-    // === DIVERGENCE — space-separated role tokens ===
-    // jsx-a11y + vue: split on whitespace, validate each token. If every token
-    //   is a valid role, require attrs for each.
-    // Our rule: looks up the whole string in aria-query. `"combobox listbox"`
-    //   is not a role → returns null → no missing attrs → NO FLAG.
-    // Net: jsx-a11y would flag `<div role="combobox listbox">` (missing attrs
-    //   for both), we don't. Captured as valid below.
-    '<template><div role="combobox listbox" /></template>',
+    // === Parity — space-separated role tokens ===
+    // jsx-a11y + vue: split on whitespace, validate each token.
+    // Our rule (post-PR): split on whitespace, walk for first RECOGNISED
+    //   (non-abstract) role per WAI-ARIA §4.1 fallback. Diverges slightly —
+    //   we validate only the PRIMARY (first recognised); peers validate
+    //   every token. For `"combobox listbox"`, we flag missing aria-expanded
+    //   /aria-controls for combobox; jsx-a11y also flags listbox's required
+    //   aria-controls separately. Still: both flag. Captured below in invalid.
 
-    // === DIVERGENCE — case-insensitivity on role value ===
+    // === Parity — case-insensitivity on role value ===
     // jsx-a11y + vue + angular: lowercase the role value before lookup.
-    //   `<div role="COMBOBOX" />` → INVALID (missing aria-expanded/controls).
-    // Our rule: passes the raw string; aria-query lookup misses → no flag.
-    '<template><div role="COMBOBOX" /></template>',
-    '<template><div role="SLIDER" /></template>',
+    // Our rule (post-PR): same — splitRoleTokens() lowercases before
+    //   walking. `<div role="COMBOBOX" />` flags as combobox. Captured
+    //   below in invalid.
   ],
 
   invalid: [
@@ -156,6 +155,24 @@ ruleTester.run('audit:role-has-required-aria (gts)', rule, {
       output: null,
       errors: [{ messageId: 'missingAttributes' }],
     },
+    // Role-fallback list: split on whitespace, validate the first recognised
+    // role (combobox). Matches jsx-a11y's detection on this case.
+    {
+      code: '<template><div role="combobox listbox" /></template>',
+      output: null,
+      errors: [{ messageId: 'missingAttributes' }],
+    },
+    // Case-insensitive role matching — uppercase values resolve the same.
+    {
+      code: '<template><div role="COMBOBOX" /></template>',
+      output: null,
+      errors: [{ messageId: 'missingAttributes' }],
+    },
+    {
+      code: '<template><div role="SLIDER" /></template>',
+      output: null,
+      errors: [{ messageId: 'missingAttributes' }],
+    },
   ],
 });
 
@@ -173,12 +190,7 @@ hbsRuleTester.run('audit:role-has-required-aria (hbs)', rule, {
     // Parity: axobject-query-backed semantic-role exemptions.
     '<input type="checkbox" role="switch" />',
     '<input type="range" role="slider" />',
-    // DIVERGENCES captured as valid-for-us:
-    //   space-separated
-    '<div role="combobox listbox" />',
-    //   case-insensitivity
-    '<div role="COMBOBOX" />',
-    //   unknown role
+    // Unknown role — both peers and ours allow (no required-attrs check).
     '<div role="foobar" />',
   ],
   invalid: [
@@ -208,6 +220,18 @@ hbsRuleTester.run('audit:role-has-required-aria (hbs)', rule, {
     },
     {
       code: '<input role="switch" />',
+      output: null,
+      errors: [{ messageId: 'missingAttributes' }],
+    },
+    // Role-fallback list — first recognised role (combobox) missing attrs.
+    {
+      code: '<div role="combobox listbox" />',
+      output: null,
+      errors: [{ messageId: 'missingAttributes' }],
+    },
+    // Case-insensitive role matching.
+    {
+      code: '<div role="COMBOBOX" />',
       output: null,
       errors: [{ messageId: 'missingAttributes' }],
     },
