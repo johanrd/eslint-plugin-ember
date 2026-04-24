@@ -23,6 +23,9 @@ const validHbs = [
   '<video autoplay muted loop playsinline></video>',
   '<video autoplay muted=""></video>',
   '<video autoplay muted="muted"></video>',
+  // Boolean-attribute semantics: `muted="false"` is still muted=on, so this
+  // is still within the <video muted autoplay> exemption.
+  '<video autoplay muted="false"></video>',
   '<video autoplay muted={{true}}></video>',
   // Unknown mustache for `muted` → skip (false positives > false negatives).
   '<video autoplay muted={{this.isMuted}}></video>',
@@ -33,6 +36,14 @@ const invalidHbs = [
   { code: '<video autoplay></video>', errors: [{ message: ERROR_VIDEO }] },
   { code: '<audio autoplay=""></audio>', errors: [{ message: ERROR_AUDIO }] },
   { code: '<audio autoplay="autoplay"></audio>', errors: [{ message: ERROR_AUDIO }] },
+  // HTML boolean-attribute semantics: the string "false" is still attribute
+  // presence, so `autoplay="false"` counts as autoplay=on.
+  { code: '<audio autoplay="false"></audio>', errors: [{ message: ERROR_AUDIO }] },
+  { code: '<video autoplay="false"></video>', errors: [{ message: ERROR_VIDEO }] },
+  // Same boolean-attribute semantics for `muted`: `muted="false"` still
+  // evaluates as muted, so `<video autoplay muted="false">` is an exempt
+  // muted-autoplay case — but `<audio>` has no muted exception.
+  { code: '<audio autoplay muted="false"></audio>', errors: [{ message: ERROR_AUDIO }] },
   { code: '<video autoplay={{true}}></video>', errors: [{ message: ERROR_VIDEO }] },
   // muted exception is <video>-only: <audio muted autoplay> is still flagged.
   { code: '<audio autoplay muted></audio>', errors: [{ message: ERROR_AUDIO }] },
