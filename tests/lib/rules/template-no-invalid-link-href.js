@@ -87,6 +87,28 @@ ruleTester.run('template-no-invalid-link-href', rule, {
       output: null,
       errors: [{ messageId: 'invalidHref' }],
     },
+    // Mustache-string-literal hrefs resolve to their static value via the
+    // shared `getStaticAttrValue` helper — the rule validates them the same
+    // as text-node values. Covers the common bypass hole where authors
+    // wrap a literal href in mustaches (`{{"#"}}`) to dodge a simple
+    // "is this a text node" check.
+    {
+      code: '<template><a href={{"#"}}>Click</a></template>',
+      output: null,
+      errors: [{ messageId: 'invalidHref' }],
+    },
+    {
+      code: '<template><a href={{"javascript:void(0)"}}>Click</a></template>',
+      output: null,
+      errors: [{ messageId: 'invalidHref' }],
+    },
+    // Single-part quoted-mustache (GlimmerConcatStatement wrapping a
+    // literal) resolves the same way.
+    {
+      code: '<template><a href="{{"#"}}">Click</a></template>',
+      output: null,
+      errors: [{ messageId: 'invalidHref' }],
+    },
     // <area> shares <a>'s href semantics — same invalid values flag.
     {
       code: '<template><area href="#" shape="rect" coords="0,0,10,10" /></template>',
