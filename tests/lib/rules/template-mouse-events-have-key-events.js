@@ -14,7 +14,10 @@ ruleTester.run('template-mouse-events-have-key-events', rule, {
     '<template><div></div></template>',
     '<template><div {{on "click" this.onClick}}></div></template>',
 
-    // Hover-in paired with focus.
+    // Hover-in paired with focus. mouseover is the only default hover-in
+    // handler; the mouseenter case below is a non-default token and passes
+    // regardless of focusin because it isn't checked by default — the case
+    // exists to confirm no crash when the token falls outside defaults.
     '<template><div {{on "mouseover" this.onHover}} {{on "focus" this.onHover}}></div></template>',
     '<template><div {{on "mouseenter" this.onHover}} {{on "focusin" this.onHover}}></div></template>',
     '<template><div {{on "mouseover" this.onHover}} {{on "focusin" this.onHover}}></div></template>',
