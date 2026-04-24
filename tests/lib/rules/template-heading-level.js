@@ -25,6 +25,12 @@ const validHbs = [
   // role=dialog also creates a root.
   '<h1>a</h1><div role="dialog"><h1>Dialog</h1></div>',
   '<h1>a</h1><div role="alertdialog"><h1>Alert</h1></div>',
+  // Case variants: ARIA role tokens are case-insensitive per the HTML spec.
+  '<h1>a</h1><div role="DIALOG"><h1>Case variant</h1></div>',
+  '<h1>a</h1><div role="Dialog"><h1>Case variant</h1></div>',
+  // Role-fallback list where an INVALID token precedes `dialog` — the first
+  // recognised token is `dialog`, so this IS a sectioning root.
+  '<h1>a</h1><div role="foo dialog"><h1>Fallback dialog</h1></div>',
   // No headings at all.
   '<p>no headings</p>',
   // Skipped levels: allowed by default (component-based intermediate
@@ -44,6 +50,14 @@ const invalidHbs = [
   },
   {
     code: '<h1>a</h1><h1>b</h1><dialog><h1>Dialog</h1></dialog>',
+    errors: [{ message: ERR_MULTI_H1 }],
+  },
+  // `role="presentation dialog"` — `presentation` is a valid role, so the
+  // effective role resolved by first-valid-token semantics is `presentation`,
+  // NOT `dialog`. The div therefore does NOT create a fresh sectioning root,
+  // and its inner <h1> is a sibling to the outer <h1> → multiple-h1 flagged.
+  {
+    code: '<h1>a</h1><div role="presentation dialog"><h1>Inside</h1></div>',
     errors: [{ message: ERR_MULTI_H1 }],
   },
 ];
