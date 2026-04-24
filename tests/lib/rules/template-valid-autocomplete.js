@@ -96,6 +96,36 @@ const invalidHbs = [
       },
     ],
   },
+  // Multiple contact modifiers — HTML §4.10.19.9 allows at most one.
+  {
+    code: '<input type="email" autocomplete="home work email" />',
+    errors: [
+      {
+        message:
+          '`"work"` cannot be combined with another contact modifier — autocomplete allows at most one of `home`, `work`, `mobile`, `fax`, `pager`',
+      },
+    ],
+  },
+  {
+    code: '<input type="tel" autocomplete="mobile pager tel" />',
+    errors: [
+      {
+        message:
+          '`"pager"` cannot be combined with another contact modifier — autocomplete allows at most one of `home`, `work`, `mobile`, `fax`, `pager`',
+      },
+    ],
+  },
+  // Same contact token repeated — still flagged (count > 1 regardless of
+  // whether it's the same or different token).
+  {
+    code: '<input type="tel" autocomplete="home home tel" />',
+    errors: [
+      {
+        message:
+          '`"home"` cannot be combined with another contact modifier — autocomplete allows at most one of `home`, `work`, `mobile`, `fax`, `pager`',
+      },
+    ],
+  },
   // Order violation (webauthn before field).
   {
     code: '<input type="password" autocomplete="webauthn current-password" />',
