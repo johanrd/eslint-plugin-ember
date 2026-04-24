@@ -73,6 +73,19 @@ const additionalElementsInvalid = [
       },
     ],
   },
+  // The `muted` exemption applies only to native <video>. Custom tags added
+  // via `additionalElements` still flag when they carry `autoplay`, even
+  // with `muted` present — we can't verify the tag's mute semantics.
+  {
+    code: '<my-media autoplay muted></my-media>',
+    options: [{ additionalElements: ['my-media'] }],
+    errors: [
+      {
+        message:
+          'The `autoplay` attribute is disruptive for users and has accessibility concerns on `<my-media>`',
+      },
+    ],
+  },
 ];
 
 const gjsValid = validHbs.map((code) => `<template>${code}</template>`);

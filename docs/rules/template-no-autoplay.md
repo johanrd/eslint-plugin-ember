@@ -41,6 +41,15 @@ Dynamic values such as `autoplay={{this.shouldAutoplay}}` or
 know the runtime value, and false positives are considered worse than false
 negatives here.
 
+The literal-boolean form `autoplay={{false}}` is treated as a reliable
+opt-out (the mustache evaluates to a real JS `false`, the attribute is not
+emitted, and the media will not auto-play). The string form
+`autoplay={{"false"}}` is **not** reliable: the HTML `autoplay` attribute
+is a boolean attribute, and any presence — including the literal string
+`"false"` — means the attribute is set and the media plays. Authors
+sometimes reach for `{{"false"}}` when migrating from a framework that
+treats it as a falsy sentinel; this rule does not special-case that form.
+
 ## Configuration
 
 - `additionalElements` (`string[]`): extra tag names to check beyond the default
@@ -54,6 +63,13 @@ module.exports = {
   },
 };
 ```
+
+Note that the `muted` exemption applies **only to `<video>`**. Per WCAG 2.1
+SC 1.4.2, auto-playing audible media is a WCAG failure regardless of the
+tag; since `additionalElements` may cover custom tags (e.g. `<my-media>`)
+whose mute semantics we can't statically verify, `muted` is not treated as
+an exemption on those tags. `<audio muted autoplay>` is also flagged, by
+the same reasoning.
 
 ## References
 
