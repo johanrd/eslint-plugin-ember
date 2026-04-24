@@ -1,5 +1,10 @@
 'use strict';
 
+// The AST builders below intentionally wire `.parent` back-pointers onto the
+// passed-in child nodes to match ember-eslint-parser's shape — mutation is
+// the point, not a bug. Per-line disables rather than a file-level pair to
+// match the codebase's idiom (eslint-comments/disable-enable-pair is on).
+
 const {
   getBranchPath,
   areMutuallyExclusive,
@@ -33,8 +38,10 @@ function makeIf(program, inverse = null) {
     inverse,
     parent: null,
   };
+  // eslint-disable-next-line no-param-reassign
   program.parent = node;
   if (inverse) {
+    // eslint-disable-next-line no-param-reassign
     inverse.parent = node;
   }
   return node;
@@ -54,8 +61,10 @@ function makeEach(program, inverse = null) {
     inverse,
     parent: null,
   };
+  // eslint-disable-next-line no-param-reassign
   program.parent = node;
   if (inverse) {
+    // eslint-disable-next-line no-param-reassign
     inverse.parent = node;
   }
   return node;
@@ -69,11 +78,13 @@ function makeLet(program) {
     inverse: null,
     parent: null,
   };
+  // eslint-disable-next-line no-param-reassign
   program.parent = node;
   return node;
 }
 
 function setParent(child, parent) {
+  // eslint-disable-next-line no-param-reassign
   child.parent = parent;
 }
 
@@ -200,7 +211,7 @@ describe('areMutuallyExclusive', () => {
   it('returns false for empty paths', () => {
     expect(areMutuallyExclusive([], [])).toBe(false);
   });
-  it('returns false when one path is empty and the other isn\'t', () => {
+  it("returns false when one path is empty and the other isn't", () => {
     // {{#if}}<a/>{{/if}}<b/> — both render when if is true.
     const a = makeElement('a');
     const aProgram = makeBlock([a]);
