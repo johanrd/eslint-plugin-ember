@@ -31,8 +31,6 @@ const validHbs = [
   '<select autocomplete="country"><option>NO</option></select>',
   // Dynamic — skip.
   '<input type="text" autocomplete={{this.ac}} />',
-  // Empty — skip.
-  '<input type="text" autocomplete="" />',
   // Non-form-control — skip.
   '<div autocomplete="anything"></div>',
   // hidden with valid field.
@@ -44,6 +42,21 @@ const invalidHbs = [
   {
     code: '<form autocomplete="yes"></form>',
     errors: [{ message: '`<form autocomplete>` can only be `"on"` or `"off"` (got `"yes"`)' }],
+  },
+  // Empty autocomplete on form — invalid (not on/off).
+  {
+    code: '<form autocomplete=""></form>',
+    errors: [{ message: '`<form autocomplete>` can only be `"on"` or `"off"` (got `""`)' }],
+  },
+  // Empty autocomplete on a control — no field name, nothing to match.
+  {
+    code: '<input type="text" autocomplete="" />',
+    errors: [{ message: '`autocomplete` attribute is missing a field name' }],
+  },
+  // Whitespace-only counts the same.
+  {
+    code: '<input type="text" autocomplete="   " />',
+    errors: [{ message: '`autocomplete` attribute is missing a field name' }],
   },
   // hidden: on/off forbidden.
   {

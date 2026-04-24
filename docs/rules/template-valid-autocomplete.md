@@ -16,7 +16,9 @@ The rule handles:
 - Token grammar: tokens must be a valid combination from the section / hint /
   contact / field-name / webauthn set, in the right order.
 
-Dynamic values (`autocomplete={{this.acValue}}`) are skipped.
+Dynamic values (`autocomplete={{this.acValue}}`) are skipped. Static empty
+(`autocomplete=""`) and whitespace-only values are flagged: on `<form>` as
+an invalid non-on/off value, on controls as a missing field name.
 
 **Not checked**: whether a field name's control group matches the input type
 (e.g. `"current-password"` on `<input type="text">`). The HTML spec describes
