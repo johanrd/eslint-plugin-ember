@@ -104,7 +104,7 @@ ruleTester.run('template-anchor-has-content', rule, {
 
     // Scope-shadowed lowercase `a` (local binding in GJS) — not the native
     // HTML anchor, so the rule does not validate it. `isNativeElement`
-    // detects the shadowing via scope reference tracking.
+    // detects the shadowing via scope bindings in the scope chain.
     {
       filename: 'test.gjs',
       code: `
