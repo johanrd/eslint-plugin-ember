@@ -9,6 +9,16 @@ const validHbs = [
   '<yield/>',
 ];
 
+// HBS-only cases: these use a native HTML `<template>` element as the first
+// child, which parses as a nested `<template>` in GJS/GTS (invalid syntax —
+// GJS reserves `<template>` for the module-level component wrapper).
+const validHbsOnly = [
+  // The rule must NOT descend into the native `<template>` and flag the
+  // inner `{{yield}}` as yield-only; the outer template has additional
+  // content (the `{{#each}}` block).
+  '<template>{{yield}}</template>{{#each items}}item{{/each}}',
+];
+
 const invalidHbs = [
   {
     code: '{{yield}}',
@@ -63,6 +73,6 @@ const hbsRuleTester = new RuleTester({
 });
 
 hbsRuleTester.run('template-no-yield-only', rule, {
-  valid: validHbs,
+  valid: [...validHbs, ...validHbsOnly],
   invalid: invalidHbs,
 });
