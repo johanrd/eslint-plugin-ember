@@ -33,6 +33,14 @@ ruleTester.run('template-no-invalid-link-href', rule, {
     '<template><area href="#section" shape="default" /></template>',
     // Dynamic area href — skip.
     '<template><area href={{this.url}} shape="rect" coords="0,0,1,1" /></template>',
+
+    // Non-scheme URLs that happen to contain `javascript:` are not javascript:
+    // URLs — they are relative paths or fragments. The URL parser resolves
+    // them against the base URL; no script runs.
+    '<template><a href="./javascript:foo">Relative path</a></template>',
+    '<template><a href="#javascript:foo">Fragment id</a></template>',
+    '<template><a href="/javascript:foo">Absolute path</a></template>',
+    '<template><a href="?q=javascript:foo">Query string</a></template>',
   ],
   invalid: [
     // Plain "#" placeholder.
