@@ -129,6 +129,20 @@ const multiTemplateInvalid = [
 <template><label for="x">x</label><Input id="x" /></template>`,
     errors: [{ message: errNotLabelable('x') }],
   },
+
+  // Ember <Input type="hidden"> renders a native <input type="hidden"> — not
+  // labelable for the same reason native <input type="hidden"> isn't.
+  {
+    code: `import { Input } from '@ember/component';
+<template><label for="h">h</label><Input type="hidden" id="h" /></template>`,
+    errors: [{ message: errNotLabelable('h') }],
+  },
+  // Aliased import — same rule applies to the local alias.
+  {
+    code: `import { Input as MyInput } from '@ember/component';
+<template><label for="h">h</label><MyInput type="hidden" id="h" /></template>`,
+    errors: [{ message: errNotLabelable('h') }],
+  },
 ];
 
 gjsRuleTester.run('template-valid-label-for', rule, {

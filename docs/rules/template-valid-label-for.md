@@ -60,9 +60,11 @@ This rule **allows** the following:
 - Classic curly-helper invocations like `{{input id="x"}}` or
   `{{textarea id="x"}}` are not collected as label targets — only angle-bracket
   element forms contribute `id`s. A `<label for="x">` that points at a
-  curly-helper-rendered control will be reported as missing its target; use
-  the angle-bracket form (`<Input id="x" />`, `<Textarea id="x" />`, or a
-  native `<input id="x" />`) when you need the rule to see the association.
+  curly-helper-rendered control is **silently ignored** by the rule (the
+  association is not visible to the static analyzer; the rule does not report
+  it as missing, but it also can't validate it). Use the angle-bracket form
+  (`<Input id="x" />`, `<Textarea id="x" />`, or a native `<input id="x" />`)
+  when you need the rule to see the association.
 - **Scope:** native HTML labelable controls plus Ember's built-in `<Input>`
   and `<Textarea>` components (which render to `<input>` / `<textarea>` and
   accept `id=` forwarding, so they are valid `<label for>` targets).
