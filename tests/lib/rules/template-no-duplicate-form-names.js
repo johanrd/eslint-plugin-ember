@@ -28,6 +28,12 @@ const validHbs = [
   '<form><input type="reset" name="x" /><input type="text" name="x" /></form>',
   // Dynamic name — skip.
   '<form><input name={{this.fieldName}} /><input name="email" /></form>',
+  // Dynamic type — the control's submission category is unknown at lint
+  // time, so we can't prove a collision with a same-named static control.
+  // Skip rather than guess; false negatives here are safer than flagging a
+  // legitimate radio/button group that happens to share a name.
+  '<form><input type={{this.kind}} name="a" /><input type="text" name="a" /></form>',
+  '<form><button type={{this.kind}} name="a">x</button><input type="text" name="a" /></form>',
   // Same name but in different forms — fine.
   '<form><input name="a" /></form><form><input name="a" /></form>',
   // Disabled control is ignored — it does not contribute to form data.
