@@ -57,6 +57,12 @@ This rule **allows** the following:
   component or a partial) can't be validated and are silently ignored.
 - Multiple occurrences of the same `id` are tracked as the first one seen;
   `template-no-duplicate-id` handles the duplicate case separately.
+- Classic curly-helper invocations like `{{input id="x"}}` or
+  `{{textarea id="x"}}` are not collected as label targets — only angle-bracket
+  element forms contribute `id`s. A `<label for="x">` that points at a
+  curly-helper-rendered control will be reported as missing its target; use
+  the angle-bracket form (`<Input id="x" />`, `<Textarea id="x" />`, or a
+  native `<input id="x" />`) when you need the rule to see the association.
 - **Scope:** native HTML labelable controls plus Ember's built-in `<Input>`
   and `<Textarea>` components (which render to `<input>` / `<textarea>`
   and accept `id=` forwarding, so they are valid `<label for>` targets).
