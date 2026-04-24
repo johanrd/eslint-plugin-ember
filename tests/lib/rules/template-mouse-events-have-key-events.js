@@ -21,7 +21,13 @@ ruleTester.run('template-mouse-events-have-key-events', rule, {
 
     // Hover-out paired with blur.
     '<template><div {{on "mouseout" this.onLeave}} {{on "blur" this.onLeave}}></div></template>',
-    '<template><div {{on "mouseleave" this.onLeave}} {{on "focusout" this.onLeave}}></div></template>',
+    // mouseout paired with focusout — exercises focusout as a default-checked hover-out partner.
+    '<template><div {{on "mouseout" this.onLeave}} {{on "focusout" this.onLeave}}></div></template>',
+    // mouseleave + focusout — requires opting mouseleave in via hoverOutHandlers, locks in focusout recognition.
+    {
+      code: '<template><div {{on "mouseleave" this.onLeave}} {{on "focusout" this.onLeave}}></div></template>',
+      options: [{ hoverOutHandlers: ['mouseout', 'mouseleave'] }],
+    },
 
     // Both pairings.
     `<template>
