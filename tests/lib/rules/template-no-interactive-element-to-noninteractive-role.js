@@ -30,6 +30,11 @@ ruleTester.run('template-no-interactive-element-to-noninteractive-role', rule, {
     // Components — rule skips (not a DOM element).
     '<template><CustomBtn role="article" /></template>',
 
+    // Scope-bound lowercase tag — `<button>` here is a local binding, so it
+    // resolves to a component invocation (not a native interactive element)
+    // and the rule must skip it even with a non-interactive role attribute.
+    'const button = ButtonComponent;\n<template><button role="article" /></template>',
+
     // Unknown role — rule skips.
     '<template><button role="fakerole">Click</button></template>',
 
