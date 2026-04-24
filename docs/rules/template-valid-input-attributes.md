@@ -7,8 +7,9 @@ declared `type`. For example, `pattern` only applies to the text-like
 input types; on `type="number"` it is silently ignored by the browser.
 
 The attribute/type compatibility table matches the HTML living standard.
-Dynamic type values (e.g. `type={{this.inputType}}`) and inputs without
-an explicit `type` are skipped.
+Dynamic type values (e.g. `type={{this.inputType}}`) are skipped. Inputs
+with a missing, valueless, empty, or unknown `type` are treated as being
+in the Text state and are validated accordingly.
 
 ## Examples
 
