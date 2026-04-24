@@ -242,6 +242,25 @@ ruleTester.run('template-interactive-supports-focus', rule, {
       errors: [{ messageId: 'focusable', data: { tag: 'input', role: 'button' } }],
     },
 
+    // === tabindex does NOT override disabled / type=hidden ===
+    // Disabled form controls are removed from the tab order (HTML §4.10.18.5)
+    // regardless of tabindex. Hidden inputs aren't focusable either.
+    {
+      code: '<template><button disabled role="menuitem" tabindex="0"></button></template>',
+      output: null,
+      errors: [{ messageId: 'focusable', data: { tag: 'button', role: 'menuitem' } }],
+    },
+    {
+      code: '<template><input type="hidden" role="button" tabindex="0" /></template>',
+      output: null,
+      errors: [{ messageId: 'focusable', data: { tag: 'input', role: 'button' } }],
+    },
+    {
+      code: '<template><select disabled role="combobox" tabindex="0"></select></template>',
+      output: null,
+      errors: [{ messageId: 'focusable', data: { tag: 'select', role: 'combobox' } }],
+    },
+
     // === audio / video without controls is not focusable. ===
     {
       code: '<template><audio role="slider"></audio></template>',
