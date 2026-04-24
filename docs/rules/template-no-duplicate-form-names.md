@@ -17,11 +17,14 @@ Two categories are exempt from the duplicate check:
   Per [HTML §4.10.21.4](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constructing-the-form-data-set)
   they do not contribute to the form data, so their `name` can't collide
   with anything.
-- **Activation-only groups** (`<input type="radio">`, `<input type="submit">`,
-  `<button type="submit">`) may share a `name` with same-type siblings.
-  A radio group uses the shared name to denote mutual exclusion; multiple
-  submit buttons with the same name distinguish which one the user activated
-  by `value`.
+- **Radio groups** (`<input type="radio">`) share a `name` with same-type
+  siblings to express mutual exclusion — exactly one contributes per
+  submission.
+- **Submit-like controls** may share a `name` across any mix of
+  `<input type="submit">`, `<input type="image">`, and `<button>` (bare
+  `<button>` defaults to `type="submit"` per HTML §4.10.9). Only one
+  submit-like control contributes to the form-data entry list per
+  submission — the one the user activated — so same-name is unambiguous.
 
 ## Examples
 

@@ -10,7 +10,6 @@ const {
   areMutuallyExclusive,
   createConditionalScope,
   isBranchingBlockStatement,
-  isConditionalBlockBranch,
   isIfOrUnlessBlockStatement,
   isIfOrUnlessBlockBranch,
 } = require('../../../lib/utils/control-flow');
@@ -81,11 +80,6 @@ function makeLet(program) {
   // eslint-disable-next-line no-param-reassign
   program.parent = node;
   return node;
-}
-
-function setParent(child, parent) {
-  // eslint-disable-next-line no-param-reassign
-  child.parent = parent;
 }
 
 describe('isIfOrUnlessBlockStatement', () => {
