@@ -95,6 +95,15 @@ const multiTemplateValid = [
   // Sibling templates both have independent matching pairs.
   `<template><label for="a">A</label><input id="a" /></template>
 <template><label for="b">B</label><input id="b" /></template>`,
+
+  // Ember built-in <Input> / <Textarea> imported from @ember/component —
+  // labelable via the import-source check. Covers both unaliased and
+  // aliased forms.
+  `import { Input } from '@ember/component';
+<template><label for="email">Email</label><Input id="email" /></template>`,
+  `import { Input as MyInput, Textarea as MyTextarea } from '@ember/component';
+<template><label for="email">E</label><MyInput id="email" />
+<label for="bio">B</label><MyTextarea id="bio" /></template>`,
 ];
 
 const multiTemplateInvalid = [
@@ -110,6 +119,14 @@ const multiTemplateInvalid = [
   {
     code: `const Widget = <template><input id="x" /></template>;
 <template><label for="x">x</label><div id="x">text</div></template>`,
+    errors: [{ message: errNotLabelable('x') }],
+  },
+
+  // <Input> imported from a NON-@ember/component module — user override,
+  // not the built-in labelable component. Rule correctly flags.
+  {
+    code: `import Input from 'my-own-lib';
+<template><label for="x">x</label><Input id="x" /></template>`,
     errors: [{ message: errNotLabelable('x') }],
   },
 ];

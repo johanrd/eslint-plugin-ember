@@ -64,15 +64,23 @@ This rule **allows** the following:
   the angle-bracket form (`<Input id="x" />`, `<Textarea id="x" />`, or a
   native `<input id="x" />`) when you need the rule to see the association.
 - **Scope:** native HTML labelable controls plus Ember's built-in `<Input>`
-  and `<Textarea>` components (which render to `<input>` / `<textarea>`
-  and accept `id=` forwarding, so they are valid `<label for>` targets).
-  In classic Handlebars, `<Input>` always resolves to the built-in. In
-  strict GJS/GTS, `<Input>` could be an imported override; we follow
-  [`ember-template-lint`'s precedent on `require-input-label`](https://github.com/ember-template-lint/ember-template-lint/blob/master/lib/rules/require-input-label.js)
-  and treat the tag as labelable anyway — "better to risk false negatives
-  than false positives." Other components (custom labelable wrappers) are
-  not recognized; rewrite to native controls or suppress on a case-by-case
-  basis.
+  and `<Textarea>` components (which render to `<input>` / `<textarea>` and
+  accept `id=` forwarding, so they are valid `<label for>` targets).
+  Resolution depends on template mode:
+
+  - **Classic Handlebars (`.hbs`):** `<Input>` / `<Textarea>` always resolve
+    globally to the built-in — treated as labelable.
+  - **Strict GJS/GTS (`.gjs` / `.gts`):** the rule inspects the file's
+    `import` declarations. A PascalCase tag is treated as a built-in
+    labelable component if and only if it's imported from
+    `@ember/component` — whether bound under the original name
+    (`import { Input }`) or a local alias (`import { Input as MyInput }`).
+    Imports from other modules (custom libraries, local components) are
+    NOT recognized as labelable.
+
+  Other components — custom labelable wrappers, component compositions —
+  are not detected. Rewrite to native controls, use Ember's built-in, or
+  suppress on a case-by-case basis.
 
 ## References
 
