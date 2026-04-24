@@ -2,7 +2,7 @@
 
 <!-- end auto-generated rule header -->
 
-Disallow anchor (`<a>`) elements whose `href` value is a commonly-misused placeholder (e.g. `href="#"`, `href=""`, `href="javascript:..."`).
+Disallow link elements — `<a>` and `<area>` — whose `href` value is a commonly-misused placeholder (e.g. `href="#"`, `href=""`, `href="javascript:..."`). Both carry URL semantics per HTML §4.5.1 / §4.8.14, so the same validity rules apply on each.
 
 This rule is **pragmatic accessibility/UX guidance, not spec enforcement.** Values like `href="#"` and `href="javascript:void(0)"` are technically valid URLs per the [HTML spec](https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-a-element); the rule flags them because they are widely-recognized anti-patterns for faking a clickable anchor:
 
