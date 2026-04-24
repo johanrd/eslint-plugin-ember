@@ -46,10 +46,12 @@ const invalidHbs = [
   // Default: only multiple-h1 is flagged.
   {
     code: '<h1>a</h1><h1>b</h1>',
+    output: null,
     errors: [{ message: ERR_MULTI_H1 }],
   },
   {
     code: '<h1>a</h1><h1>b</h1><dialog><h1>Dialog</h1></dialog>',
+    output: null,
     errors: [{ message: ERR_MULTI_H1 }],
   },
   // `role="presentation dialog"` — `presentation` is a valid role, so the
@@ -58,6 +60,7 @@ const invalidHbs = [
   // and its inner <h1> is a sibling to the outer <h1> → multiple-h1 flagged.
   {
     code: '<h1>a</h1><div role="presentation dialog"><h1>Inside</h1></div>',
+    output: null,
     errors: [{ message: ERR_MULTI_H1 }],
   },
 ];
@@ -67,11 +70,13 @@ const optionSkippedLevelsStrictInvalid = [
   {
     code: '<h1>a</h1><h3>b</h3>',
     options: [{ allowSkippedLevels: false }],
+    output: null,
     errors: [{ message: skipped(2, 3) }],
   },
   {
     code: '<h1>a</h1><h2>b</h2><h4>c</h4>',
     options: [{ allowSkippedLevels: false }],
+    output: null,
     errors: [{ message: skipped(3, 4) }],
   },
 ];
@@ -92,6 +97,7 @@ const optionMinH2Invalid = [
   {
     code: '<h4>too deep</h4>',
     options: [{ minInitialRank: 'h2' }],
+    output: null,
     errors: [{ message: initial(2, 4) }],
   },
 ];
@@ -104,6 +110,7 @@ const optionAllowSkippedLevelsInvalid = [
   // Default mode (skipped-levels allowed) still flags multiple-h1.
   {
     code: '<h1>a</h1><h3>b</h3><h1>c</h1>',
+    output: null,
     errors: [{ message: ERR_MULTI_H1 }],
   },
 ];
@@ -122,21 +129,25 @@ const gjsValid = [
 const gjsInvalid = [
   ...invalidHbs.map(({ code, errors }) => ({
     code: `<template>${code}</template>`,
+    output: null,
     errors,
   })),
   ...optionMinH2Invalid.map(({ code, options, errors }) => ({
     code: `<template>${code}</template>`,
     options,
+    output: null,
     errors,
   })),
   ...optionAllowSkippedLevelsInvalid.map(({ code, options, errors }) => ({
     code: `<template>${code}</template>`,
     ...(options ? { options } : {}),
+    output: null,
     errors,
   })),
   ...optionSkippedLevelsStrictInvalid.map(({ code, options, errors }) => ({
     code: `<template>${code}</template>`,
     options,
+    output: null,
     errors,
   })),
 ];
