@@ -111,6 +111,27 @@ ruleTester.run('template-no-invalid-interactive', rule, {
     // Their a11y contract is author-defined; ESLint can't introspect.
     '<template><my-element onclick={{this.handler}}></my-element></template>',
     '<template><x-foo {{on "click" this.handler}}></x-foo></template>',
+
+    // Non-interactive escape hatches:
+    //  - role="presentation" / role="none" (author-declared decorative);
+    //  - aria-hidden in any plausibly-"hide" form.
+    // Valueless/empty aria-hidden is contested in the ecosystem (see PR body
+    // for the four positions); we lean fewer-false-positives and treat it as
+    // an escape hatch. Explicit aria-hidden="false" / {{false}} still flags.
+    '<template><div role="presentation" onclick={{this.h}}></div></template>',
+    '<template><div role="none" onclick={{this.h}}></div></template>',
+    '<template><div role="presentation" {{on "click" this.h}}></div></template>',
+    '<template><div role="none" {{action "foo"}}></div></template>',
+    '<template><div aria-hidden onclick={{this.h}}></div></template>',
+    '<template><div aria-hidden="" onclick={{this.h}}></div></template>',
+    '<template><div aria-hidden="true" onclick={{this.h}}></div></template>',
+    '<template><div aria-hidden="TRUE" onclick={{this.h}}></div></template>',
+    '<template><div aria-hidden={{true}} onclick={{this.h}}></div></template>',
+    '<template><div aria-hidden={{"true"}} onclick={{this.h}}></div></template>',
+    '<template><div aria-hidden="true" {{on "click" this.h}}></div></template>',
+    // Case-insensitive / whitespace tolerance on role values.
+    '<template><div role="  Presentation  " onclick={{this.h}}></div></template>',
+    '<template><div role="NONE" onclick={{this.h}}></div></template>',
   ],
 
   invalid: [
@@ -211,6 +232,23 @@ ruleTester.run('template-no-invalid-interactive', rule, {
           data: { tagName: 'a', handler: 'onclick' },
         },
       ],
+    },
+    {
+      // aria-hidden="false" is opt-in to exposure — rule still flags non-interactive + handler.
+      code: '<template><div aria-hidden="false" onclick={{this.h}}></div></template>',
+      output: null,
+      errors: [{ messageId: 'noInvalidInteractive' }],
+    },
+    {
+      code: '<template><div aria-hidden={{false}} onclick={{this.h}}></div></template>',
+      output: null,
+      errors: [{ messageId: 'noInvalidInteractive' }],
+    },
+    {
+      // `role="note"` is neither presentation/none nor an interactive role.
+      code: '<template><div role="note" onclick={{this.h}}></div></template>',
+      output: null,
+      errors: [{ messageId: 'noInvalidInteractive' }],
     },
   ],
 });
