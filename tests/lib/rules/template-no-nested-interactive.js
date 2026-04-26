@@ -97,6 +97,18 @@ ruleTester.run('template-no-nested-interactive', rule, {
     {{/if}}
   </label>
     </template>`,
+
+    // Canonical ARIA composite-widget hierarchies — derived from aria-query's
+    // `requiredOwnedElements`. These are standard WAI-ARIA APG patterns and
+    // must not be flagged.
+    '<template><div role="listbox"><div role="option">A</div><div role="option">B</div></div></template>',
+    '<template><div role="tablist"><div role="tab">Tab 1</div><div role="tab">Tab 2</div></div></template>',
+    '<template><div role="tree"><div role="treeitem">Node</div></div></template>',
+    '<template><div role="treegrid"><div role="row"><div role="gridcell">Cell</div></div></div></template>',
+    '<template><div role="grid"><div role="row"><div role="gridcell">Cell</div></div></div></template>',
+    '<template><div role="grid"><div role="row"><div role="rowheader">Header</div></div></div></template>',
+    '<template><div role="grid"><div role="row"><div role="columnheader">Header</div></div></div></template>',
+    '<template><div role="radiogroup"><div role="radio">Opt 1</div></div></template>',
   ],
 
   invalid: [
@@ -307,6 +319,16 @@ hbsRuleTester.run('template-no-nested-interactive', rule, {
       code: '<button><img usemap=""></button>',
       options: [{ ignoreUsemapAttribute: true }],
     },
+
+    // Canonical ARIA composite-widget hierarchies.
+    '<div role="listbox"><div role="option">A</div><div role="option">B</div></div>',
+    '<div role="tablist"><div role="tab">Tab 1</div><div role="tab">Tab 2</div></div>',
+    '<div role="tree"><div role="treeitem">Node</div></div>',
+    '<div role="treegrid"><div role="row"><div role="gridcell">Cell</div></div></div>',
+    '<div role="grid"><div role="row"><div role="gridcell">Cell</div></div></div>',
+    '<div role="grid"><div role="row"><div role="rowheader">Header</div></div></div>',
+    '<div role="grid"><div role="row"><div role="columnheader">Header</div></div></div>',
+    '<div role="radiogroup"><div role="radio">Opt 1</div></div>',
   ],
   invalid: [
     {
