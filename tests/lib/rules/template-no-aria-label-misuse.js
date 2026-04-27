@@ -58,6 +58,10 @@ const validHbs = [
   // role per WAI-ARIA §4.1. `role="xxyxyz button"` resolves to `button`,
   // which accepts aria-label — should not flag.
   '<div role="xxyxyz button" aria-label="Custom">x</div>',
+  // Valueless aria-label carries no name — treated as empty, not flagged as misuse.
+  '<div aria-label>x</div>',
+  // Static string-literal mustache — empty string is treated as no label.
+  '<div aria-label={{""}}>x</div>',
 ];
 
 const invalidHbs = [

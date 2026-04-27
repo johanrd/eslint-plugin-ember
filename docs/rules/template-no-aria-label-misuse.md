@@ -1,5 +1,6 @@
 # ember/template-no-aria-label-misuse
 
+<!-- begin auto-generated rule header -->
 <!-- end auto-generated rule header -->
 
 Flag `aria-label` and `aria-labelledby` on elements whose computed role
