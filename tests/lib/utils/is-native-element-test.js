@@ -2,10 +2,9 @@
 
 const { isNativeElement, ELEMENT_TAGS } = require('../../../lib/utils/is-native-element');
 
-// Tests exercise the list-lookup path only. Scope-based shadowing is covered
-// by the rule-level test suites (see tests/lib/rules/template-no-block-params-
-// for-html-elements.js and siblings) because it requires a real ESLint
-// SourceCode / scope manager that's only built up by the rule tester.
+// Tests cover the list-lookup path (no sourceCode argument). Scope-based
+// shadowing (passing a real ESLint SourceCode) is exercised by rule-level
+// test suites that go through the full RuleTester pipeline.
 
 describe('isNativeElement — list-only behavior (no sourceCode)', () => {
   it('returns true for lowercase HTML tag names', () => {
