@@ -45,11 +45,14 @@ const validHbs = [
   // aria-hidden with leading/trailing whitespace + mixed case — still truthy,
   // but the descendant below is NOT focusable, so no violation.
   '<div aria-hidden=" TRUE "><span>x</span></div>',
+  // Per WAI-ARIA 1.2, bare/empty aria-hidden is invalid and NOT treated as
+  // truthy — only the explicit string "true" hides the element.
+  '<button aria-hidden>Click</button>',
+  '<div aria-hidden><a href="/profile">Profile</a></div>',
 ];
 
 const invalidHbs = [
   { code: '<button aria-hidden="true">Click</button>', errors: [{ message: ERROR_SELF }] },
-  { code: '<button aria-hidden>Click</button>', errors: [{ message: ERROR_SELF }] },
   { code: '<button aria-hidden={{true}}>Click</button>', errors: [{ message: ERROR_SELF }] },
   { code: '<a href="/foo" aria-hidden="true">link</a>', errors: [{ message: ERROR_SELF }] },
   { code: '<input aria-hidden="true" />', errors: [{ message: ERROR_SELF }] },
@@ -68,10 +71,6 @@ const invalidHbs = [
   },
   {
     code: '<div aria-hidden="true"><button>ok</button></div>',
-    errors: [{ message: ERROR_DESC }],
-  },
-  {
-    code: '<div aria-hidden><a href="/profile">Profile</a></div>',
     errors: [{ message: ERROR_DESC }],
   },
   {
@@ -105,13 +104,28 @@ const gjsInvalid = invalidHbs.map(({ code, errors }) => ({
   errors,
 }));
 
+// GJS-only: lowercase tag shadowed by an in-scope binding is a component
+// invocation, not a native element — must not be flagged.
+const gjsValidExtra = [
+  {
+    // `button` is rebound to a component import; the <button> tag inside the
+    // template is NOT a native <button>, so aria-hidden on it is fine.
+    filename: 'test.gjs',
+    code: `
+      import MyButton from './my-button';
+      const button = MyButton;
+      <template><button aria-hidden="true" /></template>
+    `,
+  },
+];
+
 const gjsRuleTester = new RuleTester({
   parser: require.resolve('ember-eslint-parser'),
   parserOptions: { ecmaVersion: 2022, sourceType: 'module' },
 });
 
 gjsRuleTester.run('template-no-aria-hidden-focusable', rule, {
-  valid: gjsValid,
+  valid: [...gjsValid, ...gjsValidExtra],
   invalid: gjsInvalid,
 });
 
