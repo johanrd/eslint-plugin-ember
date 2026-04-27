@@ -38,8 +38,8 @@ const invalidHbs = [
   },
   // Valueless type attribute — per HTML spec resolves to the missing-value
   // default (Text state), same runtime result as `type=""`. Flag and autofix
-  // to `type="text"`. (Output loses the pre-slash space because the
-  // valueless attr range ends at `type`; prettier will re-insert if needed.)
+  // to `type="text"`. The autofix replaces the attribute node in-place; the
+  // space before /> is consumed and can be restored by a formatter if needed.
   {
     code: '<input type />',
     output: '<input type="text"/>',
