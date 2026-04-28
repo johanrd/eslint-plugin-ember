@@ -62,6 +62,15 @@ const validHbs = [
   '<div aria-label>x</div>',
   // Static string-literal mustache — empty string is treated as no label.
   '<div aria-label={{""}}>x</div>',
+  // Bare-mustache falsy on aria-label (rows h6, h9, h10) — Glimmer omits the
+  // attribute at runtime, so there is NO aria-label and no misuse to flag.
+  '<div aria-label={{false}}>x</div>',
+  '<div aria-label={{null}}>x</div>',
+  '<div aria-label={{undefined}}>x</div>',
+  // Bare-mustache falsy on tabindex (rows t6, t7) — escape hatch should NOT
+  // fire because tabindex isn't actually rendered. The element is back to
+  // having a non-interactive implicit role and aria-label IS a misuse.
+  // (paired with an aria-label to ensure it gets flagged for the right reason)
 ];
 
 const invalidHbs = [
@@ -83,6 +92,16 @@ const invalidHbs = [
   },
   {
     code: '<div aria-label={{this.label}}>x</div>',
+    errors: [{ message: err('aria-label', 'div', 'generic') }],
+  },
+  // Bare-mustache falsy on tabindex (rows t6, t7) — escape hatch shouldn't
+  // fire (tabindex omitted at runtime). aria-label is misuse on a generic.
+  {
+    code: '<div tabindex={{false}} aria-label="Custom">x</div>',
+    errors: [{ message: err('aria-label', 'div', 'generic') }],
+  },
+  {
+    code: '<div tabindex={{null}} aria-label="Custom">x</div>',
     errors: [{ message: err('aria-label', 'div', 'generic') }],
   },
   // <img alt=""> is role=presentation per ARIA; aria-label contradicts the
