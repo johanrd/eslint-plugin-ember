@@ -29,6 +29,12 @@ ruleTester.run('template-no-noninteractive-element-to-interactive-role', rule, {
     // Dynamic role → skipped.
     '<template><h1 role={{this.role}}>Title</h1></template>',
 
+    // <header> is deliberately excluded — its role depends on ancestry
+    // (`banner` when a direct child of <body>, `generic` otherwise), so the
+    // rule can't statically tell whether it's non-interactive. Matches
+    // jsx-a11y's `if (tagName === 'header') return false` carve-out.
+    '<template><header role="button">Click</header></template>',
+
     // Components — rule skips.
     '<template><CustomHeading role="button" /></template>',
 
