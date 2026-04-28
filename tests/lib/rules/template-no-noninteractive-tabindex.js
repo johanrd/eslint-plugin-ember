@@ -75,6 +75,8 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     '<template><span tabindex="-1">text</span></template>',
     '<template><section tabindex="-1">scroll target</section></template>',
     '<template><div tabindex={{-1}}></div></template>',
+    // GlimmerConcatStatement form (quoted-mustache with single number-literal part).
+    '<template><div tabindex="{{-1}}"></div></template>',
 
     // WAI-ARIA 1.2 §4.1 role fallback: unrecognized first token is skipped,
     // the next recognized token applies. `button` is interactive → allowed.
