@@ -37,9 +37,11 @@ const invalidHbs = [
     errors: [{ message: errInvalid('TEXTY') }],
   },
   // Valueless type attribute — per HTML spec resolves to the missing-value
-  // default (Text state), same runtime result as `type=""`. Flag and autofix
-  // to `type="text"`. The autofix replaces the attribute node in-place; the
-  // space before /> is consumed and can be restored by a formatter if needed.
+  // default (Text state — https://html.spec.whatwg.org/multipage/input.html#text-(type=text)-state-and-search-state-(type=search)),
+  // same runtime result as `type=""`. Flag and autofix to `type="text"`. The
+  // Glimmer AST attribute range extends to the next attribute or tag-close
+  // boundary, so `replaceText` swallows the trailing space before `/>`. A
+  // formatter can restore preferred spacing.
   {
     code: '<input type />',
     output: '<input type="text"/>',
