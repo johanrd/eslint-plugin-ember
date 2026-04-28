@@ -79,6 +79,7 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     // WAI-ARIA 1.2 §4.1 role fallback: unrecognized first token is skipped,
     // the next recognized token applies. `button` is interactive → allowed.
     '<template><div role="foobar button" tabindex="0"></div></template>',
+
   ],
   invalid: [
     {
@@ -137,6 +138,18 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     // Mustache-number literal is resolved the same as the string form.
     {
       code: '<template><article tabindex={{0}}></article></template>',
+      output: null,
+      errors: [{ messageId: 'noNonInteractiveTabindex' }],
+    },
+    // Non-integer tabindex strings are invalid per HTML spec, but the attribute
+    // is still present with the intent of adding tabindex — flag the misuse.
+    {
+      code: '<template><div tabindex="0.5"></div></template>',
+      output: null,
+      errors: [{ messageId: 'noNonInteractiveTabindex' }],
+    },
+    {
+      code: '<template><div tabindex="2abc"></div></template>',
       output: null,
       errors: [{ messageId: 'noNonInteractiveTabindex' }],
     },
