@@ -44,6 +44,11 @@ ruleTester.run('template-no-interactive-element-to-noninteractive-role', rule, {
     '<template><input type="hidden" role="presentation" /></template>',
     '<template><input type="HIDDEN" role="presentation" /></template>',
     '<template><input type=" hidden " role="presentation" /></template>',
+    // Mustache forms that resolve to `type="hidden"` at runtime (i2 / i3
+    // analogs). Were previously false-positive flagged because the guard
+    // only matched GlimmerTextNode.
+    '<template><input type={{"hidden"}} role="presentation" /></template>',
+    '<template><input type="{{\'hidden\'}}" role="presentation" /></template>',
 
     // <a> without href is not interactive.
     '<template><a role="heading">Not a link</a></template>',
@@ -60,6 +65,13 @@ ruleTester.run('template-no-interactive-element-to-noninteractive-role', rule, {
     '<template><audio role="presentation" src="/x.mp3" /></template>',
     '<template><video role="img" src="/x.mp4" /></template>',
     '<template><audio role="img" src="/x.mp3" /></template>',
+    // Bare-mustache falsy on `controls` (cross-attribute observation: HTML
+    // boolean attrs follow rows m6/m9/m10) — Glimmer omits the attribute
+    // at runtime, so the media has no user-operable UI and the
+    // role="presentation" is allowed. Was a false positive before.
+    '<template><video controls={{false}} role="presentation" src="/x.mp4" /></template>',
+    '<template><video controls={{null}} role="presentation" src="/x.mp4" /></template>',
+    '<template><audio controls={{undefined}} role="presentation" src="/x.mp3" /></template>',
   ],
   invalid: [
     {
