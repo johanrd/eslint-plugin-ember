@@ -17,6 +17,13 @@ ruleTester.run('template-click-events-have-key-events', rule, {
     // Inherently-interactive elements — keyboard is already built in.
     '<template><button {{on "click" this.toggle}}>Toggle</button></template>',
     '<template><a href="/x" {{on "click" this.track}}>Link</a></template>',
+    // <video controls> / <audio controls> — interactive per HTML §3.2.5.2.7.
+    '<template><video controls {{on "click" this.h}}></video></template>',
+    '<template><audio controls {{on "click" this.h}}></audio></template>',
+    // <video controls="{{X}}"> — concat is never falsy at runtime, so the
+    // controls UI renders → element is interactive (lib/utils/html-interactive-content
+    // resolves controls via classifyAttribute).
+    '<template><video controls="{{this.show}}" {{on "click" this.h}}></video></template>',
     '<template><input type="checkbox" {{on "click" this.toggle}} /></template>',
     '<template><input type="text" {{on "click" this.onClick}} /></template>',
     '<template><input {{on "click" this.onClick}} /></template>',
@@ -63,6 +70,22 @@ ruleTester.run('template-click-events-have-key-events', rule, {
   invalid: [
     {
       code: '<template><div {{on "click" this.onClick}}></div></template>',
+      output: null,
+      errors: [{ messageId: 'needsKeyEvent' }],
+    },
+    // <video controls={{false}}> — Glimmer omits the controls attribute at
+    // runtime (boolean-attr falsy-coercion via cross-attribute observation),
+    // so the element has no controls UI and is NOT interactive content.
+    // Adding a click handler without a key handler is the same a11y bug as
+    // on a plain <div>. Was a false negative before the helper-level fix in
+    // lib/utils/html-interactive-content.js.
+    {
+      code: '<template><video controls={{false}} {{on "click" this.h}}></video></template>',
+      output: null,
+      errors: [{ messageId: 'needsKeyEvent' }],
+    },
+    {
+      code: '<template><audio controls={{null}} {{on "click" this.h}}></audio></template>',
       output: null,
       errors: [{ messageId: 'needsKeyEvent' }],
     },
