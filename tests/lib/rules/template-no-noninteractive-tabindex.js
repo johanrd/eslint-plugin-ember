@@ -81,7 +81,6 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     // WAI-ARIA 1.2 §4.1 role fallback: unrecognized first token is skipped,
     // the next recognized token applies. `button` is interactive → allowed.
     '<template><div role="foobar button" tabindex="0"></div></template>',
-
   ],
   invalid: [
     {
