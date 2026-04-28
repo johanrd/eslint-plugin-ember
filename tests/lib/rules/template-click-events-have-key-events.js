@@ -23,6 +23,10 @@ ruleTester.run('template-click-events-have-key-events', rule, {
     '<template><select {{on "click" this.onClick}}></select></template>',
     '<template><textarea {{on "click" this.onClick}}></textarea></template>',
     '<template><summary {{on "click" this.noop}}>More</summary></template>',
+
+    // <option>/<datalist> are widget descendants — keyboard activation lives on
+    // their host (<select>/<input list>), not on the descendant itself, so the
+    // rule explicitly skips them rather than treating them as "keyboard built in".
     '<template><option {{on "click" this.h}}>Foo</option></template>',
     '<template><datalist {{on "click" this.h}}></datalist></template>',
 
@@ -30,6 +34,10 @@ ruleTester.run('template-click-events-have-key-events', rule, {
     '<template><div aria-hidden="true" {{on "click" this.noop}}></div></template>',
     // Mustache-literal boolean `true` — explicit static opt-out.
     '<template><div aria-hidden={{true}} {{on "click" this.noop}}></div></template>',
+    // Mustache string-literal "TRUE" (case-insensitive) — also static opt-out.
+    '<template><div aria-hidden={{"TRUE"}} {{on "click" this.noop}}></div></template>',
+    // GlimmerConcatStatement form (quoted-mustache with single boolean-literal part).
+    '<template><div aria-hidden="{{true}}" {{on "click" this.noop}}></div></template>',
     '<template><div hidden {{on "click" this.noop}}></div></template>',
 
     // Presentation role — content has no semantics for AT.
