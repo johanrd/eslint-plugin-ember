@@ -14,6 +14,15 @@ ruleTester.run('template-no-noninteractive-tabindex', rule, {
     '<template><div></div></template>',
     '<template><article></article></template>',
 
+    // Bare `{{false}}` / `{{null}}` / `{{undefined}}` cause Glimmer to omit
+    // the attribute at runtime (doc rows t6, t7) — element has no tabindex,
+    // so the rule shouldn't fire. Was a false positive before classifyAttribute.
+    '<template><div tabindex={{false}}></div></template>',
+    '<template><div tabindex={{null}}></div></template>',
+    '<template><article tabindex={{undefined}}></article></template>',
+    // Dynamic tabindex — runtime value unknown; conservative skip.
+    '<template><div tabindex={{this.idx}}></div></template>',
+
     // Interactive native elements.
     '<template><button tabindex="0">Click</button></template>',
     '<template><a href="/x" tabindex="0">Link</a></template>',
