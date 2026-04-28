@@ -22,6 +22,8 @@ ruleTester.run('template-mouse-events-have-key-events', rule, {
     // Hover-out paired with blur.
     '<template><div {{on "mouseout" this.onLeave}} {{on "blur" this.onLeave}}></div></template>',
     '<template><div {{on "mouseleave" this.onLeave}} {{on "focusout" this.onLeave}}></div></template>',
+    // mouseout also pairs with focusout (the bubbling counterpart of blur).
+    '<template><div {{on "mouseout" this.onLeave}} {{on "focusout" this.onLeave}}></div></template>',
 
     // Both pairings.
     `<template>
@@ -36,7 +38,7 @@ ruleTester.run('template-mouse-events-have-key-events', rule, {
     // Component — not a DOM element.
     '<template><CustomCard {{on "mouseover" this.onHover}} /></template>',
 
-    // Custom element — not in aria-query's dom map.
+    // Custom element — `isNativeElement` excludes hyphenated tags so the rule skips.
     '<template><my-card {{on "mouseover" this.onHover}}></my-card></template>',
 
     // Default handler set matches jsx-a11y — mouseenter/mouseleave are NOT

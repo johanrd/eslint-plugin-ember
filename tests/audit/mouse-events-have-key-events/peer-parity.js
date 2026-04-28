@@ -53,15 +53,17 @@ ruleTester.run('audit:mouse-events-have-key-events (gts)', rule, {
 
     // Component / PascalCase — not a DOM element, skipped.
     // jsx-a11y: `<MyElement onMouseOver={...} />` valid (skips non-DOM).
-    // Our rule guards with aria-query's `dom.has(tag)` which is lowercase-only.
+    // Our rule guards with `isNativeElement` (PascalCase tags are component
+    // invocations in Glimmer); the aria-query `dom.has` check then narrows
+    // remaining native tags to HTML.
     '<template><MyElement /></template>',
     '<template><MyElement {{on "mouseover" this.h}} /></template>',
     '<template><MyElement {{on "mouseout" this.h}} /></template>',
     '<template><MyElement {{on "focus" this.h}} /></template>',
     '<template><MyElement {{on "blur" this.h}} /></template>',
 
-    // Custom (dasherized) element — also not in aria-query's dom map,
-    // so our rule skips. lit-a11y has `allowCustomElements`/`allowList`
+    // Custom (dasherized) element — `isNativeElement` excludes hyphenated
+    // tags, so our rule skips. lit-a11y has `allowCustomElements`/`allowList`
     // options; we don't support that, but the default behavior aligns
     // (no flag on unknown tags).
     '<template><custom-button {{on "mouseover" this.h}} {{on "focus" this.f}}></custom-button></template>',
