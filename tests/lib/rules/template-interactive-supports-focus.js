@@ -279,6 +279,13 @@ ruleTester.run('template-interactive-supports-focus', rule, {
       output: null,
       errors: [{ messageId: 'focusable', data: { tag: 'div', role: 'textbox' } }],
     },
+    // Whitespace around "false" — trim before comparison so " false " is still
+    // an explicit opt-out (HTML treats the value as case-insensitive trimmed).
+    {
+      code: '<template><div role="textbox" contenteditable=" false ">x</div></template>',
+      output: null,
+      errors: [{ messageId: 'focusable', data: { tag: 'div', role: 'textbox' } }],
+    },
 
     // === Multi-token role where the FIRST token is interactive (WAI-ARIA
     // §4.1: only the first valid role applies; the rest are fallbacks). ===
