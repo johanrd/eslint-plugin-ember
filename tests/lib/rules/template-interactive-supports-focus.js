@@ -52,7 +52,8 @@ ruleTester.run('template-interactive-supports-focus', rule, {
     '<template><div role="treeitem" tabindex="0"></div></template>',
     // tabindex="-1" is also sufficient — the role still has a focus target.
     '<template><div role="button" tabindex="-1"></div></template>',
-    // Dynamic tabindex satisfies the check (the attribute is present).
+    // Dynamic tabindex satisfies the check (runtime value unknown — give
+    // benefit of the doubt; the runtime value may be a valid number).
     '<template><div role="button" tabindex={{this.ti}}></div></template>',
 
     // === Interactive role on a non-focusable host but contenteditable is truthy. ===
@@ -127,6 +128,20 @@ ruleTester.run('template-interactive-supports-focus', rule, {
     // focus — flagged by this rule on role alone (no event handler required). ===
     {
       code: '<template><div role="button"></div></template>',
+      output: null,
+      errors: [{ messageId: 'focusable', data: { tag: 'div', role: 'button' } }],
+    },
+    // Bare-mustache falsy on tabindex (rows t6, t7) — Glimmer omits the
+    // attribute at runtime, so tabindex is NOT actually present and does not
+    // satisfy the focus requirement. AST-presence check would have missed
+    // these (false negatives — rule silently let invalid templates through).
+    {
+      code: '<template><div role="button" tabindex={{false}}></div></template>',
+      output: null,
+      errors: [{ messageId: 'focusable', data: { tag: 'div', role: 'button' } }],
+    },
+    {
+      code: '<template><div role="button" tabindex={{null}}></div></template>',
       output: null,
       errors: [{ messageId: 'focusable', data: { tag: 'div', role: 'button' } }],
     },
