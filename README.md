@@ -260,6 +260,7 @@ To disable a rule for an entire `.gjs`/`.gts` file, use a regular ESLint file-le
 
 | Name                                                                                                             | Description                                                                      | 💼 | 🔧 | 💡 |
 | :--------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------- | :- | :- | :- |
+| [template-interactive-supports-focus](docs/rules/template-interactive-supports-focus.md)                         | require elements with an interactive ARIA role to be focusable                   |    |    |    |
 | [template-link-href-attributes](docs/rules/template-link-href-attributes.md)                                     | require href attribute on link elements                                          | 📋 |    |    |
 | [template-no-abstract-roles](docs/rules/template-no-abstract-roles.md)                                           | disallow abstract ARIA roles                                                     | 📋 |    |    |
 | [template-no-accesskey-attribute](docs/rules/template-no-accesskey-attribute.md)                                 | disallow accesskey attribute                                                     | 📋 | 🔧 |    |
@@ -589,6 +590,8 @@ To disable a rule for an entire `.gjs`/`.gts` file, use a regular ESLint file-le
 If you have any suggestions, ideas, or problems, feel free to [create an issue](https://github.com/ember-cli/eslint-plugin-ember/issues/new), but first please make sure your question does not repeat [previous ones](https://github.com/ember-cli/eslint-plugin-ember/issues).
 
 ### Creating a New Rule
+
+If your rule inspects template attribute values (e.g. mustache forms like `attr={{X}}` or `attr="{{X}}"`), read [docs/glimmer-attribute-behavior.md](docs/glimmer-attribute-behavior.md) first — Glimmer's actual rendering behavior is non-obvious for several common forms, and the doc has the empirically-verified table.
 
 - [Create an issue](https://github.com/ember-cli/eslint-plugin-ember/issues/new) with a description of the proposed rule
 - Create files for the [new rule](https://eslint.org/docs/developer-guide/working-with-rules):
